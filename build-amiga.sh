@@ -2,7 +2,7 @@
 # Copyright (c) 2026 AmigaChrome Team. OpenFont, MIT licence (LICENSE).
 # For Cradle's stove builds: Cradle sets STOVE (the os32-gcc16 stove) and
 # OUT, and runs this. It builds openfont.library, the SDK's link library and
-# the lab test with OpenAmigaGCC 16.2.0-open2, for the 68040 only
+# the lab test with the stove's OpenAmigaGCC 16.2 (CI builds with open4), for the 68040 only
 # (amiga/build-library.sh).
 set -eu
 HERE=$(cd "$(dirname "$0")" && pwd)

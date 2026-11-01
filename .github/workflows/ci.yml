@@ -29,22 +29,22 @@ jobs:
       - uses: actions/checkout@v4
       - name: Compiler libraries
         run: sudo apt-get update && sudo apt-get install -y libgmp10 libmpfr6 libmpc3
-      - name: OpenAmigaGCC 16.2.0-open2
+      - name: OpenAmigaGCC 16.2.0-open4
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release download v16.2.0-open2 --repo DalsinAI/openamigagcc \
-            --pattern 'openamigagcc-16.2.0-open2-x86_64-linux.tar.xz' \
+          gh release download v16.2.0-open4 --repo DalsinAI/openamigagcc \
+            --pattern 'openamigagcc-16.2.0-open4-x86_64-linux.tar.xz' \
             --pattern 'SHA256SUMS'
           sha256sum -c --ignore-missing SHA256SUMS
-          tar -xJf openamigagcc-16.2.0-open2-x86_64-linux.tar.xz
+          tar -xJf openamigagcc-16.2.0-open4-x86_64-linux.tar.xz
       - name: 68040
-        run: CC="$GITHUB_WORKSPACE/openamigagcc-16.2.0-open2-x86_64-linux/bin/m68k-amigaos-gcc" sh amiga/build.sh
+        run: CC="$GITHUB_WORKSPACE/openamigagcc-16.2.0-open4-x86_64-linux/bin/m68k-amigaos-gcc" sh amiga/build.sh
       - name: OpenNDK
         run: git clone --depth 1 https://github.com/DalsinAI/openamigasdk.git "$RUNNER_TEMP/openamigasdk"
       - name: openfont.library
         run: |
-          CC="$GITHUB_WORKSPACE/openamigagcc-16.2.0-open2-x86_64-linux/bin/m68k-amigaos-gcc" \
+          CC="$GITHUB_WORKSPACE/openamigagcc-16.2.0-open4-x86_64-linux/bin/m68k-amigaos-gcc" \
           NDK="$RUNNER_TEMP/openamigasdk/OpenNDK/Include_H" OPENGPU_INCLUDE="$RUNNER_TEMP/openamigasdk/Include" \
           sh amiga/build-library.sh
       - name: SDK files match the SFD

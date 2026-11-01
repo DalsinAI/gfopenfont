@@ -1,7 +1,7 @@
 #!/bin/sh
 # Copyright (c) 2026 AmigaChrome Team. OpenFont, MIT licence (LICENSE).
 # openfont.library for AmigaOS 3.2 on the 68040, built with OpenAmigaGCC
-# 16.2.0-open2 (the os32-gcc16 stove's compiler). Everything in it is
+# 16.2.0-open4 (CI; the os32-gcc16 stove carries open3). Everything in it is
 # OpenFont's own code: no upstream sources are fetched.
 #
 #   amiga/build-library.sh [OUT_DIR]          (default build/amiga)
@@ -27,7 +27,7 @@ mkdir -p "$OUT" "$WORK"
 
 find_cc() {
     for d in "$HOME/AmigaChrome/stoves/os32-gcc16/bin" "$HOME/AmigaChrome/stoves/os32-gcc16/prefix/bin" \
-             /opt/openamigagcc-16.2.0-open2-x86_64-linux/bin; do
+             /opt/openamigagcc-16.2.0-open4-x86_64-linux/bin; do
         if [ -x "$d/m68k-amigaos-gcc" ]; then echo "$d"; return; fi
     done
 }
