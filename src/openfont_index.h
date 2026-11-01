@@ -1,5 +1,5 @@
-/* OpenFont's font index, in place of fontconfig: what fonts are in the
- * folders OpenFont looks in, found by family, weight and slant, with the
+/* GFOpenFont's font index, in place of fontconfig: what fonts are in the
+ * folders GFOpenFont looks in, found by family, weight and slant, with the
  * aliases and generic families (sans-serif, serif, monospace) in one place.
  *
  * The index is kept in a small text file, rebuilt when a folder's date says
@@ -10,7 +10,7 @@
 #ifndef OPENFONT_INDEX_H
 #define OPENFONT_INDEX_H
 
-#include "openfont/openfont.h"
+#include "gfopenfont/gfopenfont.h"
 
 #define OF_INDEX_MAX_DIRS 16
 #define OF_INDEX_PATH 256
@@ -69,11 +69,11 @@ int of_index_save(const OFIndex *ix, const char *path);
  * scanned: of_index_scan then brings the index up to date. */
 int of_index_stale(const OFIndex *ix);
 
-/* Rescans every folder with ctx (OpenFont reads the faces' tables). */
+/* Rescans every folder with ctx (GFOpenFont reads the faces' tables). */
 int of_index_scan(OFIndex *ix, OFContext *ctx);
 
 /* The best face for a family, weight (100-900) and slant: the family
- * itself, then the aliases (the user's first, then OpenFont's own), then
+ * itself, then the aliases (the user's first, then GFOpenFont's own), then
  * the generic family it belongs to, then sans-serif. NULL with no fonts. */
 const OFIndexEntry *of_index_find(const OFIndex *ix, const char *family,
                                   uint16_t weight, int italic);

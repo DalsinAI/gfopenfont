@@ -1,4 +1,4 @@
-/* of_call_on_stack: openfont.library does its work on a stack of its own.
+/* of_call_on_stack: gfopenfont.library does its work on a stack of its own.
  * Programs often call with 4 KB of stack, and shaping and the rasteriser
  * want more than that. Every call into the core holds
  * the library's lock, so one stack serves them all.

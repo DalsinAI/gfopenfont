@@ -1,4 +1,4 @@
-/* OpenFont's outline rasteriser: a 26.6 outline (TrueType quadratics, CFF
+/* GFOpenFont's outline rasteriser: a 26.6 outline (TrueType quadratics, CFF
  * cubics) to an A8 coverage bitmap, without hinting.
  *
  * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE).
@@ -13,8 +13,8 @@
  *     every line to its left, less the part of its own lines' climb that
  *     lies left of them. Non-zero winding: the magnitude, capped at full.
  * No state outside the call, nothing but integer arithmetic and two arrays,
- * so it can move to OpenGPU as it is. */
-#include "openfont/openfont.h"
+ * so it can move to GFOpenGPU as it is. */
+#include "gfopenfont/gfopenfont.h"
 #include "of_font.h"
 
 #include <stdlib.h>

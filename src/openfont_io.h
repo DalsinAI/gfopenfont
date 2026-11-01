@@ -1,7 +1,7 @@
-/* What OpenFont's core asks of the system it runs on: whole files in and
+/* What GFOpenFont's core asks of the system it runs on: whole files in and
  * out, the names in a folder, and when a file or folder last changed.
  * Programs (the host, and 68k programs with libnix) use openfont_io_stdio.c
- * and openfont_io_posixdir.c; openfont.library uses library/of_io_dos.c,
+ * and openfont_io_posixdir.c; gfopenfont.library uses library/of_io_dos.c,
  * which goes through dos.library and owns no C library state.
  *
  * Copyright (c) 2026 AmigaChrome Team. OpenFont, MIT licence (LICENSE). */

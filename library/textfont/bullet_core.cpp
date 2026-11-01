@@ -1,4 +1,4 @@
-/* OpenBullet's core: bullet.library's glyph engine in lean C++.
+/* GFOpenBullet's core: bullet.library's glyph engine in lean C++.
  * Copyright (c) 2026 AmigaChrome Team. MIT.
  *
  * Clean-room: written from the NDK 3.2 headers' layouts and comments
@@ -9,11 +9,11 @@
  *
  * OS 3.2's bullet.library draws Agfa Intellifont outlines, whose file
  * format has no public specification. This engine is bullet.library's API
- * over OpenFont (openfont.library): OpenFont reads the outline file
+ * over GFOpenFont (gfopenfont.library): GFOpenFont reads the outline file
  * (TrueType and OpenType, CFF too) and draws each glyph's coverage through
  * the matrix the tags make; the core keeps the tags, the errors, the
- * emboldening and the GlyphMap. An outline file OpenFont can't read, or no
- * OpenFont, is OTERR_BadFace, so diskfont.library falls back to the font's
+ * emboldening and the GlyphMap. An outline file GFOpenFont can't read, or no
+ * GFOpenFont, is OTERR_BadFace, so diskfont.library falls back to the font's
  * bitmap sizes (README.md, "Font formats").
  *
  * Built with openamigagcc's lean C++ library profile:
@@ -33,10 +33,10 @@
  *  The matrix. Font units (y up) to 26.6 device pixels: scale by ppem_x
  *  across and ppem_y up, then shear X += Y * ShearSin / ShearCos, then
  *  rotate X' = X cos - Y sin, Y' = X sin + Y cos. As one 2 x 2 matrix of
- *  16.16 pixels to the em, each entry rounded half up, handed to OpenFont.
+ *  16.16 pixels to the em, each entry rounded half up, handed to GFOpenFont.
  *  No hinting.
  *
- *  Pixels. OpenFont's coverage (exact area, 0 to 255); a pixel is set at
+ *  Pixels. GFOpenFont's coverage (exact area, 0 to 255); a pixel is set at
  *  128 and over.
  *
  *  Emboldening. EmboldenX and Y are fractions of the em; in pixels ex =
@@ -112,7 +112,7 @@ struct Engine {
     obl_GlyphEngine ge;            /* first: the caller sees this */
     const obl_env *env;
     void *user;
-    void *face;                    /* OpenFont's face; NULL: no face */
+    void *face;                    /* GFOpenFont's face; NULL: no face */
     u32 upm;
     bool shear_part, rot_part;     /* the sine given, the cosine not yet */
     bool have_code, have_code2;
@@ -145,7 +145,7 @@ const TagItem *next_tag(const TagItem **tp)
 
 /* ---- the font ---------------------------------------------------------- */
 
-/* The glyph a code maps to (OpenFont finds a Microsoft Symbol font's
+/* The glyph a code maps to (GFOpenFont finds a Microsoft Symbol font's
  * codes at 0xF000 up itself) */
 u32 glyph_of(Engine *e, u32 code) { return e->env->char_index(e->user, e->face, code); }
 
@@ -352,7 +352,7 @@ u32 width_list(Engine *e, obl_MinList **out)
     return ERR(OBL_OTERR_Success);
 }
 
-/* The kerning OpenFont shapes between the two codes (its kern and GPOS
+/* The kerning GFOpenFont shapes between the two codes (its kern and GPOS
  * tables); text and design pairs are the same (ABI test). */
 u32 kern_pair(Engine *e, s32 *out)
 {

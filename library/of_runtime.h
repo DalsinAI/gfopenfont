@@ -1,4 +1,4 @@
-/* openfont.library's own runtime: of_runtime.c and of_stack.c.
+/* gfopenfont.library's own runtime: of_runtime.c and of_stack.c.
  * Copyright (c) 2026 AmigaChrome Team. OpenFont, MIT licence (LICENSE). */
 #ifndef OF_RUNTIME_H
 #define OF_RUNTIME_H

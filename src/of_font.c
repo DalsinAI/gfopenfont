@@ -1,11 +1,11 @@
-/* OpenFont's font reader: the sfnt container, the metrics and naming tables,
+/* GFOpenFont's font reader: the sfnt container, the metrics and naming tables,
  * cmap, and TrueType outlines (loca/glyf). CFF outlines are in of_cff.c.
  *
  * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE).
  *
  * From the OpenType specification only. Every read is checked against the
  * file's size: a broken font is OF_ERR_FONT, never a crash. */
-#include "openfont/openfont.h"
+#include "gfopenfont/gfopenfont.h"
 #include "of_font.h"
 
 #include <stdlib.h>
