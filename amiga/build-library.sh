@@ -13,7 +13,8 @@
 #   OPENGPU_INCLUDE  opengpu.library's headers (opengpu/stream.h,
 #              proto/opengpu.h), for OF_DrawGlyphsA: the Open SDK's Include
 #              (default: next to NDK, openamigasdk/Include, then
-#              ../openamigasdk/Include beside this checkout)
+#              ../openamigasdk/Include beside this checkout, then the
+#              compiler's own, as the os32-gcc16 stove carries them)
 #
 # It builds in OUT_DIR/work.
 set -eu
@@ -46,10 +47,15 @@ if [ -z "${OPENGPU_INCLUDE:-}" ]; then
         if [ -f "$d/opengpu/stream.h" ] && [ -f "$d/proto/opengpu.h" ]; then OPENGPU_INCLUDE=$(cd "$d" && pwd); break; fi
     done
 fi
-[ -n "${OPENGPU_INCLUDE:-}" ] && [ -f "$OPENGPU_INCLUDE/opengpu/stream.h" ] || {
-    echo "opengpu.library's headers not found: set OPENGPU_INCLUDE to the Open SDK's Include" >&2; exit 1; }
-# after the NDK's, so its exec and proto headers come first
-NDKFLAGS="$NDKFLAGS -idirafter $OPENGPU_INCLUDE"
+if [ -n "${OPENGPU_INCLUDE:-}" ] && [ -f "$OPENGPU_INCLUDE/opengpu/stream.h" ]; then
+    # after the NDK's, so its exec and proto headers come first
+    NDKFLAGS="$NDKFLAGS -idirafter $OPENGPU_INCLUDE"
+elif printf '#include <opengpu/stream.h>\n#include <proto/opengpu.h>\n' | "$CC" $NDKFLAGS -E -x c - >/dev/null 2>&1; then
+    echo "opengpu.library's headers: the compiler's own (a stove's)"
+else
+    echo "opengpu.library's headers not found: set OPENGPU_INCLUDE to the Open SDK's Include" >&2
+    exit 1
+fi
 
 CPU="-m68040 -m68881"   # the 68040 and its own FPU (-m68040 alone gives soft float)
 COMMON="$CPU -O2 -fno-delete-null-pointer-checks -fno-common -ffunction-sections -fdata-sections -DNDEBUG"

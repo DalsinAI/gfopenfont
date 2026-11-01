@@ -30,6 +30,11 @@
 
 #include <opengpu/stream.h>
 
+/* stream v1.8's flag (opengpu.library 0.23), for headers from before it */
+#ifndef OGPU_PATH_ALIASED
+#define OGPU_PATH_ALIASED 0x4000
+#endif
+
 #define OFG_PAGE        256         /* an atlas page's side */
 #define OFG_PAGES       8           /* 512 KB of coverage at most */
 #define OFG_TABLE       4096        /* cells, a power of two */
