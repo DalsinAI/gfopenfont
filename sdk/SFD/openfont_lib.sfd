@@ -1,4 +1,4 @@
-==id OpenFont openfont_lib.sfd 1.4
+==id OpenFont openfont_lib.sfd 1.5
 * openfont.library's calls: fonts, shaping, glyphs and the font index.
 * Copyright (c) 2026 AmigaChrome Team. OpenFont, MIT licence (LICENSE).
 * Version 1 is a preview: its calls may still change. They are frozen from
@@ -67,4 +67,9 @@ LONG OF_GlyphAdvancePx(struct OFFace * face, ULONG glyph) (a0,d0)
 * images of CBDT and sbix fonts, decoded through the PNG datatype
 LONG OF_GlyphColorBitmap(struct OFFace * face, ULONG glyph, ULONG ppem, struct OFColorBitmap * bitmap) (a0,d0,d1,a1)
 VOID OF_FreeColorBitmap(struct OFColorBitmap * bitmap) (a0)
+* revision 5 (openfont.library 1.5): glyph runs drawn through OpenGPU, from
+* a glyph cache inside the library
+LONG OF_DrawGlyphsA(struct OFFace * face, CONST struct OFGPUTarget * target, CONST struct OFGlyphRun * run, CONST struct TagItem * tags) (a0,a1,a2,a3)
+==varargs
+LONG OF_DrawGlyphs(struct OFFace * face, CONST struct OFGPUTarget * target, CONST struct OFGlyphRun * run, Tag tag1, ...) (a0,a1,a2,a3)
 ==end

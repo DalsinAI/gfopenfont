@@ -133,3 +133,19 @@ if(OPENFONT_HARFBUZZ_REF)
                  ${CMAKE_CURRENT_SOURCE_DIR}/tests/shape/latin.txt ${OPENFONT_TEST_FONT} ${OPENFONT_TEST_OTF})
     endif()
 endif()
+
+# OF_DrawGlyphsA's drawing (src/of_gpu.c) on openamigartg's OpenGPU CPU
+# core, against cairo filling the same outlines, given an openamigartg
+# checkout and cairo's headers. Only for testing; the library needs neither.
+set(OPENFONT_OPENAMIGARTG "" CACHE PATH "an openamigartg checkout, for test_gpu")
+if(OPENFONT_OPENAMIGARTG)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(OPENFONT_CAIRO REQUIRED cairo)
+    add_executable(test_gpu tests/test_gpu.c src/of_gpu.c ${OPENFONT_OPENAMIGARTG}/library/opengpu/ogpu_core.c)
+    target_include_directories(test_gpu PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${OPENFONT_OPENAMIGARTG}/include
+                               ${OPENFONT_OPENAMIGARTG}/library/opengpu ${OPENFONT_CAIRO_INCLUDE_DIRS})
+    target_link_libraries(test_gpu PRIVATE openfont ${OPENFONT_CAIRO_LIBRARIES} m)
+    if(OPENFONT_DEJAVU_SANS)
+        add_test(NAME openfont_gpu COMMAND test_gpu ${OPENFONT_DEJAVU_SANS})
+    endif()
+endif()

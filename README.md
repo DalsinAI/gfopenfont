@@ -9,7 +9,7 @@ OpenFont reads, shapes and draws fonts with its own code, written from the
 published specifications (the OpenType specification, the Unicode
 Standard).
 
-Current phase: **the resident library, a preview**. `openfont.library` 1.4 is
+Current phase: **the resident library, a preview**. `openfont.library` 1.5 is
 OpenFont for AmigaOS 3.2 on the 68040, with its own font reader, rasteriser
 and shaper inside it. It finds fonts by family through its own font index, and a
 face falls back to others for the characters it has no glyphs for. Its calls
@@ -379,6 +379,26 @@ with `IoErr()` in `cb_Top`. The library grows by 4,976 bytes (252,368 to
 257,344). Check `lib_Revision` against
 `OPENFONT_REVISION_COLOR` (4) before calling them.
 
+Revision 5 (1.5) draws text through OpenGPU: `OF_DrawGlyphsA` (-228) draws a
+run of glyphs (ids and 24.8 pen positions, a pixel size, a premultiplied
+colour and an OpenGPU operator) onto an OpenGPU surface, inside a clip
+rectangle and optionally an A8 clip mask, and returns when it is drawn. The
+glyph cache is inside the library (`src/of_gpu.c`), shared by every caller:
+each glyph is filled once into an A8 atlas page by OpenGPU's `PATH_FILL`
+(per face, size, quarter-pixel x phase and anti-aliasing), then drawn at each
+use as one `COMPOSITE_PD` of the colour through its cell; under a matrix, or
+with `OFGR_NOCACHE`, each outline is filled where it lies. `OFGR_ALIASED`
+needs a back end that says it takes `OGPU_PATH_ALIASED` (opengpu.library
+0.24's `OGPU_QUERY_FLAG`). This is the glyph cache WebKit used cairo for: a
+browser drawing through OpenGPU needs neither cairo nor a cache of its own.
+`tests/test_gpu.c` draws runs on openamigartg's CPU core against cairo
+filling the same outlines (configure with `-DOPENFONT_OPENAMIGARTG=` an
+openamigartg checkout; it needs cairo's headers). The library opens
+opengpu.library 0.18 or later on the first call (`OFERR_NOGPU` without it)
+and is built with its headers from the Open SDK (`OPENGPU_INCLUDE`, by
+default `openamigasdk/Include` beside `NDK`). Check `lib_Revision` against
+`OPENFONT_REVISION_GPU` (5) before calling it.
+
 `OF_FindFaceForCharA` remembers which characters each indexed font has (its
 character map's ranges, read the first time the font is opened), so a
 character no font has, or one only a late font has, no longer opens every
@@ -432,7 +452,9 @@ OpenType file) at 29. It ends with `OPENFONTLIB PASS`. Since 1.3 it also checks 
 calls against the host's `OPENFONT LAYOUT` hash (tests/test_openfont.c). Since
 1.4, given `COLOR` (Noto Color Emoji), it decodes U+1F600 through the PNG
 datatype and prints the pixels' hash, which `tests/ref/color_png_hash.py`
-works out on the host for the same font file. On
+works out on the host for the same font file. Since 1.5 it draws two runs
+with `OF_DrawGlyphs` through opengpu.library and expects the pixels' hash
+`tests/test_gpu.c` prints on the host (`LAB`). On
 lab t4-a (17 Oct 2026) it stopped before its first line of output; the
 library then had HarfBuzz inside, whose maths went through libnix's libm
 stubs and their unopened math library bases (openamigafont #14). With the

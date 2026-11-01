@@ -652,4 +652,34 @@ __openfont_OF_FreeColorBitmap(void *__base, struct OFColorBitmap * bitmap)
 #define OF_FreeColorBitmap(bitmap) __openfont_OF_FreeColorBitmap((OPENFONT_BASE_NAME), (struct OFColorBitmap *)(bitmap))
 #define __OF_FreeColorBitmap_base(__in_base, bitmap) __openfont_OF_FreeColorBitmap((__in_base), (struct OFColorBitmap *)(bitmap))
 
+static __inline__ LONG
+__openfont_OF_DrawGlyphsA(void *__base, struct OFFace * face, CONST struct OFGPUTarget * target, CONST struct OFGlyphRun * run, CONST struct TagItem * tags)
+{
+	register ULONG _a0 __asm("a0") = (ULONG)(face);
+	register ULONG _a1 __asm("a1") = (ULONG)(target);
+	register ULONG _a2 __asm("a2") = (ULONG)(run);
+	register ULONG _a3 __asm("a3") = (ULONG)(tags);
+	register void *_a6 __asm("a6") = __base;
+	register ULONG _d0 __asm("d0");
+	register ULONG _d1 __asm("d1");
+	__asm__ __volatile__ ("jsr -228(%/a6)"
+		: "=r" (_d0), "=r" (_d1), "+r" (_a0), "+r" (_a1)
+		: "r" (_a2), "r" (_a3), "r" (_a6)
+		: __OPENNDK_FPCLOBBER "cc", "memory");
+	return (LONG)_d0;
+}
+#define OF_DrawGlyphsA(face, target, run, tags) __openfont_OF_DrawGlyphsA((OPENFONT_BASE_NAME), (struct OFFace *)(face), (CONST struct OFGPUTarget *)(target), (CONST struct OFGlyphRun *)(run), (CONST struct TagItem *)(tags))
+#define __OF_DrawGlyphsA_base(__in_base, face, target, run, tags) __openfont_OF_DrawGlyphsA((__in_base), (struct OFFace *)(face), (CONST struct OFGPUTarget *)(target), (CONST struct OFGlyphRun *)(run), (CONST struct TagItem *)(tags))
+
+static __OPENNDK_VA_ATTR LONG
+__OF_DrawGlyphs_va(void *__base, struct OFFace * face, CONST struct OFGPUTarget * target, CONST struct OFGlyphRun * run, ...)
+{
+	__builtin_va_list _ap;
+	__builtin_va_start(_ap, run);
+	LONG _r = (LONG)__openfont_OF_DrawGlyphsA(__base, (struct OFFace *)(face), (CONST struct OFGPUTarget *)(target), (CONST struct OFGlyphRun *)(run), (CONST struct TagItem *)_ap);
+	__builtin_va_end(_ap);
+	return _r;
+}
+#define OF_DrawGlyphs(face, target, run, ...) __OF_DrawGlyphs_va((OPENFONT_BASE_NAME), (struct OFFace *)(face), (CONST struct OFGPUTarget *)(target), (CONST struct OFGlyphRun *)(run), ##__VA_ARGS__)
+
 #endif /* INLINE_OPENFONT_H */

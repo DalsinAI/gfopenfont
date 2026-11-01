@@ -36,4 +36,5 @@ OF_FindFaceForCharA(codepoint,tags)(d0,a0)
 OF_GlyphAdvancePx(face,glyph)(a0,d0)
 OF_GlyphColorBitmap(face,glyph,ppem,bitmap)(a0,d0,d1,a1)
 OF_FreeColorBitmap(bitmap)(a0)
+OF_DrawGlyphsA(face,target,run,tags)(a0,a1,a2,a3)
 ##end

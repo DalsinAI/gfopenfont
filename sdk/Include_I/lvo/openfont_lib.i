@@ -37,5 +37,6 @@ _LVOOF_FindFaceForCharA	EQU	-204
 _LVOOF_GlyphAdvancePx	EQU	-210
 _LVOOF_GlyphColorBitmap	EQU	-216
 _LVOOF_FreeColorBitmap	EQU	-222
+_LVOOF_DrawGlyphsA	EQU	-228
 
 	ENDC	; LVO_OPENFONT_LIB_I
