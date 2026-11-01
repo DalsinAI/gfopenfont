@@ -47,5 +47,7 @@
 #pragma libcall OpenFontBase OF_GlyphAdvancePx d2 0802
 #pragma libcall OpenFontBase OF_GlyphColorBitmap d8 910804
 #pragma libcall OpenFontBase OF_FreeColorBitmap de 801
+#pragma libcall OpenFontBase OF_DrawGlyphsA e4 ba9804
+#pragma tagcall OpenFontBase OF_DrawGlyphs e4 ba9804
 
 #endif /* PRAGMAS_OPENFONT_PRAGMAS_H */

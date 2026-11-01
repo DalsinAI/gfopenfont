@@ -17,6 +17,10 @@
  * PNG datatype and prints its pixels' hash (ARGB bytes, FNV-1a), which
  * tests/ref/color_png_hash.py gives on the host for the same font.
  *
+ * Revision 5's OF_DrawGlyphsA draws two runs through opengpu.library (which
+ * must be in LIBS:, 0.18 or later) as tests/test_gpu.c's lab_hash does on
+ * the host, and the pixels' hash must be the one it prints (LAB).
+ *
  * Start it with a 4 KB stack: the library works on its own.
  *
  * Prints one line per check and "OPENFONTLIB PASS" or "OPENFONTLIB FAIL n".
@@ -32,6 +36,7 @@
 #include <graphics/text.h>
 #include <libraries/openfont.h>
 #include <proto/openfont.h>
+#include <opengpu/stream.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -42,6 +47,8 @@
 #define EXPECT_HASH 0x3a37fb49UL
 /* and its LAYOUT line: revision 3's calls */
 #define EXPECT_LAYOUT_HASH 0xc78fcff5UL
+/* tests/test_gpu.c's LAB line: revision 5's OF_DrawGlyphsA on OpenGPU */
+#define EXPECT_GPU_HASH 0x2734c1bcUL
 
 struct Library *OpenFontBase;
 struct GfxBase *GfxBase;
@@ -260,6 +267,62 @@ int main(void)
                       bm.bm_Pixels, "OF_CacheGetGlyph: the glyph, with no rasterising");
                 OF_FreeBitmap(&bm);
                 OF_CloseCache(c);
+            }
+        }
+
+        /* revision 5: glyph runs through OpenGPU, as tests/test_gpu.c's lab_hash */
+        check(OpenFontBase->lib_Revision >= OPENFONT_REVISION_GPU, "openfont.library 1.5: OF_DrawGlyphsA");
+        check(sizeof(struct OFGPUTarget) == 40 && sizeof(struct OFGlyphRun) == 32 && sizeof(struct OFGPUStats) == 16,
+              "revision 5's structures have the library's sizes");
+        if (OpenFontBase->lib_Revision >= OPENFONT_REVISION_GPU) {
+            static const char gtext[] = "OpenFont through OpenGPU";
+            static LONG shear[4] = { 65536, -13107, 0, 65536 };
+            static ULONG gl[32];
+            static LONG gp[64];
+            ULONG *pix = (ULONG *)AllocVec(160 * 4 * 40, MEMF_ANY);
+            struct OFGPUTarget gt;
+            struct OFGlyphRun gr;
+            struct OFGPUStats st, st2;
+            LONG x = 2 * 256 + 100, gerr = 0, rc, rc2;
+            ULONG i, gn = 0, gh = 2166136261UL;
+            if (pix) {
+                memset(pix, 0xFF, 160 * 4 * 40);
+                memset(&gt, 0, sizeof gt);
+                gt.gt_Address = pix; gt.gt_BytesPerRow = 160 * 4; gt.gt_Width = 160; gt.gt_Height = 40;
+                gt.gt_Format = OGPU_FMT_ARGB32; gt.gt_ClipW = 160; gt.gt_ClipH = 40;
+                OF_SetSize(face, 16);
+                for (gn = 0; gtext[gn]; gn++) {
+                    gl[gn] = OF_CharIndex(face, (UBYTE)gtext[gn]);
+                    gp[2 * gn] = x;
+                    gp[2 * gn + 1] = 16 * 256;
+                    x += OF_GlyphAdvancePx(face, gl[gn]) * 4;
+                }
+                memset(&gr, 0, sizeof gr);
+                gr.gr_Glyphs = gl; gr.gr_Positions = gp; gr.gr_Count = gn; gr.gr_PixelSize = 16;
+                gr.gr_Color = 0xFF000000UL; gr.gr_Operator = OGPU_PD_OVER;
+                rc = OF_DrawGlyphs(face, &gt, &gr, OFA_GPUError, (ULONG)&gerr, OFA_GPUStats, (ULONG)&st, TAG_END);
+                if (rc == OFERR_NOGPU) {
+                    printf("     OF_DrawGlyphsA: no opengpu.library 0.18 or later in LIBS:, not run\n");
+                } else {
+                    for (i = 0; i < gn; i++)
+                        gp[2 * i + 1] += 18 * 256;
+                    gr.gr_Color = 0x80800000UL;
+                    gr.gr_Matrix = shear;
+                    rc2 = OF_DrawGlyphs(face, &gt, &gr, OFA_GPUError, (ULONG)&gerr, OFA_GPUStats, (ULONG)&st2, TAG_END);
+                    check(rc == (LONG)gn && rc2 == (LONG)gn && gerr == 0, "OF_DrawGlyphs: two runs drawn");
+                    gh = hash_bytes(gh, (const UBYTE *)pix, 160 * 4 * 40);
+                    printf("     gpu hash=%08lx, %lu filled, %lu hits, %lu filled onto the surface\n", (unsigned long)gh,
+                           (unsigned long)st2.gs_Filled, (unsigned long)st2.gs_Hits, (unsigned long)st2.gs_Direct);
+                    check(gh == EXPECT_GPU_HASH, "OF_DrawGlyphs: the pixels match the host byte for byte");
+                    /* drawn again: from the cache */
+                    gr.gr_Matrix = NULL;
+                    OF_DrawGlyphs(face, &gt, &gr, OFA_GPUStats, (ULONG)&st, TAG_END);
+                    check(st.gs_Filled == st2.gs_Filled && st.gs_Hits >= st2.gs_Hits + gn - 4,
+                          "OF_DrawGlyphs: a run drawn again comes from the cache");
+                    gr.gr_PixelSize = 0;
+                    check(OF_DrawGlyphs(face, &gt, &gr, TAG_END) == OFERR_ARGUMENT, "OF_DrawGlyphs: size 0 refused");
+                }
+                FreeVec(pix);
             }
         }
         OF_CloseFace(face);

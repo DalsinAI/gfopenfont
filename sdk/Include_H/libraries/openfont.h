@@ -22,6 +22,7 @@
 #define OPENFONT_REVISION_TEXTFONT 2   /* lib_Revision with OF_OpenTextFont */
 #define OPENFONT_REVISION_LAYOUT 3     /* lib_Revision with OF_ShapeA and the calls after it */
 #define OPENFONT_REVISION_COLOR 4      /* lib_Revision with OF_GlyphColorBitmap */
+#define OPENFONT_REVISION_GPU 5        /* lib_Revision with OF_DrawGlyphsA */
 
 /* A face (one font of a file) and a compiled glyph cache: opaque. */
 struct OFFace;
@@ -97,6 +98,9 @@ struct OFFaceInfo {
 #define OFA_UTF16     (OFA_Dummy + 14)  /* BOOL: the text is UTF-16 (UWORDs), lengths and clusters in units (FALSE) */
 /* Tag for OF_FindFaceA (revision 3) */
 #define OFA_Exact     (OFA_Dummy + 15)  /* BOOL: only the family or its aliases, else NULL with OFERR_FONT (FALSE) */
+/* revision 5, OF_DrawGlyphsA */
+#define OFA_GPUError  (OFA_Dummy + 16)  /* LONG *: OpenGPU's error (OGPU_ERR_) for the last batch, 0 when it drew */
+#define OFA_GPUStats  (OFA_Dummy + 17)  /* struct OFGPUStats *: the glyph cache's counts after the call */
 
 /* OFA_Direction */
 #define OFDIR_AUTO 0    /* from the run's script */
@@ -168,6 +172,64 @@ struct OFColorBitmap {
     ULONG cb_PPEM;              /* the strike's pixels per em */
 };                              /* 24 bytes */
 
+/* A run of glyphs drawn through OpenGPU, for OF_DrawGlyphsA (revision 5).
+ * Where: an OpenGPU surface (gt_Format: OGPU_FMT_ARGB32, XRGB32, RGB565 and
+ * the other colour formats of <opengpu/stream.h>) at gt_Address, in memory
+ * the back end reaches (the Amiga's own). Drawing stays inside the clip
+ * rectangle and the surface; with gt_MaskAddress, also inside the A8 mask
+ * covering gt_MaskX, gt_MaskY, gt_MaskW x gt_MaskH of the surface, whose
+ * coverage multiplies what is drawn (a clip path drawn into an A8 surface:
+ * outside it nothing is drawn). */
+struct OFGPUTarget {
+    APTR gt_Address;
+    LONG gt_BytesPerRow;
+    UWORD gt_Width;
+    UWORD gt_Height;
+    ULONG gt_Format;            /* OGPU_FMT_ */
+    WORD gt_ClipX;
+    WORD gt_ClipY;
+    WORD gt_ClipW;
+    WORD gt_ClipH;
+    APTR gt_MaskAddress;        /* NULL: no mask */
+    LONG gt_MaskBytesPerRow;
+    WORD gt_MaskX;              /* where the mask's top-left pixel is on the surface */
+    WORD gt_MaskY;
+    WORD gt_MaskW;
+    WORD gt_MaskH;
+};                              /* 40 bytes */
+
+/* The glyphs (of the face, as OF_ShapeA gives them) at gr_PixelSize, each
+ * at its pen position (x, y pairs of LONGs: 24.8 surface pixels, the
+ * baseline's origin, y down), in gr_Color (premultiplied 0xAARRGGBB) by
+ * gr_Operator (an OGPU_PD_ operator; text uses OGPU_PD_OVER). With
+ * gr_Matrix (four LONGs, 16.16: x' = m0 x + m1 y, y' = m2 x + m3 y, about
+ * each pen position, y down) each glyph's outline is filled under it
+ * (skewed, rotated or stretched text); without, glyphs come from the
+ * glyph cache. */
+struct OFGlyphRun {
+    ULONG *gr_Glyphs;
+    LONG *gr_Positions;
+    ULONG gr_Count;
+    ULONG gr_PixelSize;
+    ULONG gr_Color;
+    ULONG gr_Operator;
+    LONG *gr_Matrix;            /* NULL: none */
+    ULONG gr_Flags;             /* OFGR_ below */
+};                              /* 32 bytes */
+
+#define OFGR_ALIASED  0x0001    /* no anti-aliasing: each pixel in or out by its centre;
+                                   only where OpenGPU says it takes OGPU_PATH_ALIASED
+                                   (opengpu.library 0.24's OGPU_QUERY_FLAG), else OFERR_ARGUMENT */
+#define OFGR_NOCACHE  0x0002    /* fill each glyph's outline onto the surface, past the cache */
+
+/* The glyph cache's counts (OFA_GPUStats), since the library opened. */
+struct OFGPUStats {
+    ULONG gs_Filled;            /* glyphs filled into the cache */
+    ULONG gs_Hits;              /* glyphs drawn from it */
+    ULONG gs_Direct;            /* glyphs filled straight onto a surface */
+    ULONG gs_Emptied;           /* times the cache was emptied for room */
+};                              /* 16 bytes */
+
 #define OFPV_MOVE  0    /* one point */
 #define OFPV_LINE  1    /* one point */
 #define OFPV_QUAD  2    /* two: control, end */
@@ -185,5 +247,7 @@ struct OFColorBitmap {
 #define OFERR_CACHE     -7
 #define OFERR_EXEC      -8
 #define OFERR_NOTPROCESS -9   /* the caller is a task, and the call reads files */
+#define OFERR_NOGPU     -10   /* no opengpu.library 0.18 or later, or it doesn't fill paths for that format */
+#define OFERR_GPU       -11   /* OpenGPU failed to draw (OFA_GPUError says how) */
 
 #endif /* LIBRARIES_OPENFONT_H */

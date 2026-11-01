@@ -8,6 +8,7 @@ openfont.library/OF_CacheMatchesFace
 openfont.library/OF_CharIndex
 openfont.library/OF_CloseCache
 openfont.library/OF_CloseFace
+openfont.library/OF_DrawGlyphsA
 openfont.library/OF_ErrorString
 openfont.library/OF_FindFaceA
 openfont.library/OF_FindFaceForCharA
@@ -96,6 +97,13 @@ openfont.library/--background--                 openfont.library/--background--
 	Every call does its work on the library's own stack, so callers need
 	no more than their usual. Calls from several tasks are taken one at
 	a time.
+
+   DRAWING THROUGH OPENGPU
+	From revision 5, OF_DrawGlyphsA draws runs of glyphs onto an
+	OpenGPU surface (opengpu.library 0.18 or later) from a glyph cache
+	the library keeps, so a program that draws through OpenGPU (a web
+	browser's canvas and pages) needs no glyph cache or rasteriser of
+	its own.
 
    PATCHES
 	openfont.library patches nothing in the system.
@@ -228,6 +236,91 @@ openfont.library/OF_CloseFace                     openfont.library/OF_CloseFace
    FUNCTION
 	The face is freed when its last holder lets go of it: the program
 	that opened it, and any face it is a fallback of. NULL is ignored.
+
+openfont.library/OF_DrawGlyphsA                 openfont.library/OF_DrawGlyphsA
+
+   NAME
+	OF_DrawGlyphsA -- draw a run of glyphs through OpenGPU (V1, revision 5)
+
+   SYNOPSIS
+	count = OF_DrawGlyphsA(face, target, run, tags)
+	D0                     A0    A1      A2   A3
+
+	LONG OF_DrawGlyphsA(struct OFFace *, CONST struct OFGPUTarget *,
+	                    CONST struct OFGlyphRun *, CONST struct TagItem *);
+
+	count = OF_DrawGlyphs(face, target, run, tag1, ...)
+
+	LONG OF_DrawGlyphs(struct OFFace *, CONST struct OFGPUTarget *,
+	                   CONST struct OFGlyphRun *, Tag, ...);
+
+   FUNCTION
+	Draws run->gr_Count glyphs of the face onto an OpenGPU surface,
+	through opengpu.library (opened on first use; 0.18 or later, which
+	fills paths), and returns when they are drawn. This is how a
+	program draws text with OpenGPU without a glyph cache of its own.
+
+	The library keeps one glyph cache for every caller: A8 pages of
+	coverage (256 x 256 pixels, up to eight), each glyph filled into a
+	cell once by OpenGPU's PATH_FILL from its outline, for each face,
+	pixel size, quarter-pixel x position and anti-aliasing, then drawn
+	at each use as one COMPOSITE_PD of the colour through its cell. A
+	glyph's x position goes to the nearest quarter pixel, its y to the
+	nearest pixel. When the pages are full the cache is emptied and
+	filled again. With a matrix (gr_Matrix) or OFGR_NOCACHE each glyph's
+	outline is filled onto the surface where it lies, as PATH_FILL draws
+	it.
+
+	The face's pixel size is set to gr_PixelSize while it draws and put
+	back after. Glyph ids are the face's own (OF_ShapeA's gl_Glyph, with
+	glyphs from a fallback drawn with that fallback's face).
+
+	Clip: drawing stays inside gt_ClipX, gt_ClipY, gt_ClipW x gt_ClipH
+	and the surface. With gt_MaskAddress, also inside the A8 mask: the
+	glyphs' coverage is added up in a layer, multiplied by the mask, and
+	the colour drawn through that, as cairo draws text under a clip
+	path.
+
+	The operator acts on each glyph's cell (or, under a mask, the
+	mask's box): operators that change pixels where the glyph has no
+	coverage (OGPU_PD_SRC, OGPU_PD_IN, OGPU_PD_CLEAR) reach that far
+	and no further. Text is drawn with OGPU_PD_OVER.
+
+	OFGR_ALIASED draws without anti-aliasing (each pixel in or out by
+	its centre), only where opengpu.library says its back end takes
+	OGPU_PATH_ALIASED: OGPU_Query(OGPU_QUERY_FLAG(OGPU_OP_PATH_FILL,
+	OGPU_PATH_ALIASED_BIT), OGPU_FMT_A8), opengpu.library 0.24 or later.
+	Elsewhere such a run is refused with OFERR_ARGUMENT; ask first, or
+	draw it anti-aliased.
+
+	The cache's memory (up to 512 KB of pages, 64 KB of path words and
+	the fill's work memory) is AllocVec'd, MEMF_ANY, and freed when the
+	library is expunged.
+
+	It may be called from a task: it reads no files. Calls are
+	serialised on the library's lock, so a run waits for any other
+	caller's to be drawn.
+
+   INPUTS
+	face   - the face
+	target - where (struct OFGPUTarget)
+	run    - what (struct OFGlyphRun)
+	tags   - OFA_Error (LONG *): the error, as for the other calls;
+	         OFA_GPUError (LONG *): OpenGPU's own error (OGPU_ERR_) for
+	         the last batch, 0 when it drew;
+	         OFA_GPUStats (struct OFGPUStats *): the cache's counts.
+
+   RESULT
+	The number of glyphs drawn (gr_Count: spaces and glyphs outside the
+	clip count), or an error: OFERR_ARGUMENT (a NULL argument, a pixel
+	size of 0, OFGR_ALIASED where it isn't taken); OFERR_NOGPU (no
+	opengpu.library 0.18 or later, or it answers OGPU_NONE to PATH_FILL
+	on A8 or COMPOSITE_PD on gt_Format); OFERR_GPU (OpenGPU failed a
+	batch: OFA_GPUError says how; the cache is emptied); OFERR_MEMORY;
+	OFERR_FONT (the face can't be set to the size).
+
+   SEE ALSO
+	OF_ShapeA(), OF_GlyphOutline(), <opengpu/stream.h>
 
 openfont.library/OF_ErrorString                 openfont.library/OF_ErrorString
 

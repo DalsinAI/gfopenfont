@@ -9,10 +9,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: DalsinAI/openamigartg
+          ref: e8924a099a52e2772ef23074cbf96948e19e11b1   # main: OpenGPU 0.24, stream v1.8 (#161)
+          path: openamigartg
       - name: Dependencies
-        run: sudo apt-get update && sudo apt-get install -y cmake fonts-dejavu-core fonts-liberation2 fonts-noto-color-emoji
+        run: sudo apt-get update && sudo apt-get install -y cmake fonts-dejavu-core fonts-liberation2 fonts-noto-color-emoji libcairo2-dev
       - name: Configure
-        run: cmake -S . -B build
+        run: cmake -S . -B build -DOPENFONT_OPENAMIGARTG=$GITHUB_WORKSPACE/openamigartg
       - name: Build
         run: cmake --build build -j2
       - name: Test
@@ -40,6 +45,7 @@ jobs:
       - name: openfont.library
         run: |
           CC="$GITHUB_WORKSPACE/openamigagcc-16.2.0-open2-x86_64-linux/bin/m68k-amigaos-gcc" \
-          NDK="$RUNNER_TEMP/openamigasdk/OpenNDK/Include_H" sh amiga/build-library.sh
+          NDK="$RUNNER_TEMP/openamigasdk/OpenNDK/Include_H" OPENGPU_INCLUDE="$RUNNER_TEMP/openamigasdk/Include" \
+          sh amiga/build-library.sh
       - name: SDK files match the SFD
         run: python3 "$RUNNER_TEMP/openamigasdk/OpenNDK/tools/ndkgen.py" --out sdk --stubs sdk/stubs --check sdk/SFD/openfont_lib.sfd

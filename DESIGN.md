@@ -24,7 +24,9 @@ Unicode Standard), never from their code:
    with openfont.library 1.3, 23 October 2026); scripts, languages, right to
    left, joining and features for WebCore: done, 23 October 2026; colour
    glyphs from CBDT and sbix PNG images, decoded through the PNG datatype
-   (libpng out): openfont.library 1.4, 23 October 2026;
+   (libpng out): openfont.library 1.4, 23 October 2026; glyph runs drawn
+   through OpenGPU from a glyph cache in the library (cairo's glyph cache
+   out of WebKit): openfont.library 1.5, 1 November 2026;
 3. the text functions: UTF-8/16, Unicode properties from the UCD, line breaks
    (UAX #14), grapheme and word boundaries (UAX #29), NFC and IDNA, so
    OpenFont is the one place for them and can later take ICU's place for

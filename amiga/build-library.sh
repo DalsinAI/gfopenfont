@@ -10,6 +10,10 @@
 #              release unpacked under /opt)
 #   NDK        a folder of AmigaOS headers, when the compiler has none of
 #              its own: OpenNDK's Include_H (openamigasdk/OpenNDK/Include_H)
+#   OPENGPU_INCLUDE  opengpu.library's headers (opengpu/stream.h,
+#              proto/opengpu.h), for OF_DrawGlyphsA: the Open SDK's Include
+#              (default: next to NDK, openamigasdk/Include, then
+#              ../openamigasdk/Include beside this checkout)
 #
 # It builds in OUT_DIR/work.
 set -eu
@@ -37,6 +41,15 @@ NM=$(dirname "$CC")/m68k-amigaos-nm
 
 NDKFLAGS=
 [ -n "${NDK:-}" ] && NDKFLAGS="-I$NDK"
+if [ -z "${OPENGPU_INCLUDE:-}" ]; then
+    for d in ${NDK:+"$NDK/../../Include"} "$ROOT/../openamigasdk/Include"; do
+        if [ -f "$d/opengpu/stream.h" ] && [ -f "$d/proto/opengpu.h" ]; then OPENGPU_INCLUDE=$(cd "$d" && pwd); break; fi
+    done
+fi
+[ -n "${OPENGPU_INCLUDE:-}" ] && [ -f "$OPENGPU_INCLUDE/opengpu/stream.h" ] || {
+    echo "opengpu.library's headers not found: set OPENGPU_INCLUDE to the Open SDK's Include" >&2; exit 1; }
+# after the NDK's, so its exec and proto headers come first
+NDKFLAGS="$NDKFLAGS -idirafter $OPENGPU_INCLUDE"
 
 CPU="-m68040 -m68881"   # the 68040 and its own FPU (-m68040 alone gives soft float)
 COMMON="$CPU -O2 -fno-delete-null-pointer-checks -fno-common -ffunction-sections -fdata-sections -DNDEBUG"
@@ -47,7 +60,7 @@ mkdir -p "$OBJ"
 # ---- OpenFont: the core, the index, and the library around them ----
 OFFLAGS="-std=gnu99 -Wall -Wextra -Werror -I$ROOT/include -I$ROOT/src -I$ROOT/library"
 for f in src/openfont src/of_font src/of_cff src/of_raster src/of_layout src/of_shape src/of_unicode_data \
-         src/openfont_cache src/openfont_index src/openfont_io_join; do
+         src/openfont_cache src/openfont_index src/openfont_io_join src/of_gpu; do
     "$CC" $COMMON $NDKFLAGS $OFFLAGS -c "$ROOT/$f.c" -o "$OBJ/of_$(basename "$f").o"
 done
 # The library's own files include the OS headers. devices/timer.h defines
