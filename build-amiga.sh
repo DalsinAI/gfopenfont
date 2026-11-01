@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (c) 2026 AmigaChrome Team. OpenFont, MIT licence (LICENSE).
+# Copyright (c) 2026 AmiCradle Team. OpenFont, MIT licence (LICENSE).
 # For Cradle's stove builds: Cradle sets STOVE (the os32-gcc16 stove) and
 # OUT, and runs this. It builds gfopenfont.library, the SDK's link library and
 # the lab test with the stove's GFOpenAmigaGCC 16.2 (CI builds with open4), for the 68040 only

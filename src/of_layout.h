@@ -1,7 +1,7 @@
 /* GFOpenFont's OpenType layout: GDEF, GSUB and GPOS, applied to a run of
  * glyphs, and the shaper around them (of_shape.c).
  *
- * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE).
+ * Copyright (c) 2026 AmiCradle Team. MIT licence (see LICENSE).
  *
  * Written from the OpenType specification (GDEF, GSUB, GPOS, the common
  * table formats, and 'kern'). No HarfBuzz code. */

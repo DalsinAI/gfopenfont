@@ -8,7 +8,7 @@
  * 40(sp) b. StackSwap changes only the stack pointer and the task's bounds;
  * d2-d4/a2-a3 survive it and the call, as the C convention keeps them.
  *
- * Copyright (c) 2026 AmigaChrome Team. OpenFont, MIT licence (LICENSE). */
+ * Copyright (c) 2026 AmiCradle Team. OpenFont, MIT licence (LICENSE). */
 #include "of_runtime.h"
 
 __asm(

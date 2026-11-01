@@ -5,7 +5,7 @@
  * core calls (memcpy, strlen, qsort) is libnix's, which keeps no state
  * that needs one.
  *
- * Copyright (c) 2026 AmigaChrome Team. OpenFont, MIT licence (LICENSE). */
+ * Copyright (c) 2026 AmiCradle Team. OpenFont, MIT licence (LICENSE). */
 #include <exec/types.h>
 #include <exec/memory.h>
 #include <proto/exec.h>

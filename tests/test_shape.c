@@ -13,7 +13,7 @@
  * It prints a fingerprint of TEXT's shaping at 12 and 16 pixels: the
  * shaper is integers only, so the host and the 68040 must print the same.
  *
- * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE). */
+ * Copyright (c) 2026 AmiCradle Team. MIT licence (see LICENSE). */
 #include "gfopenfont/gfopenfont.h"
 #include "of_font.h"
 #include "of_layout.h"

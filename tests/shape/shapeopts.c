@@ -13,7 +13,7 @@
  * One line per run: glyph/cluster/x advance/y advance/x offset/y offset,
  * 26.6 pixels.
  *
- * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE). */
+ * Copyright (c) 2026 AmiCradle Team. MIT licence (see LICENSE). */
 #include "gfopenfont/gfopenfont.h"
 
 #include <stdio.h>

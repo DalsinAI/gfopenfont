@@ -133,5 +133,5 @@ goes wherever the fonts go (GFOpenUp puts it in
 `SYS:Utilities/GFOpenUp/Licences`, and amigachrome-guest keeps it beside the
 ROM's 11). Their
 name has neither "Bitstream" nor "Vera" in it, as the licence asks of
-modified fonts. The tool is the AmigaChrome Team's, MIT
+modified fonts. The tool is the AmiCradle Team's, MIT
 ([LICENSE](../../LICENSE)).

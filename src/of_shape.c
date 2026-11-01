@@ -1,7 +1,7 @@
 /* GFOpenFont's shaper: UTF-8 text to positioned glyphs, for left-to-right
  * scripts written letter by letter (Latin, Greek, Cyrillic and the like).
  *
- * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE).
+ * Copyright (c) 2026 AmiCradle Team. MIT licence (see LICENSE).
  *
  * Written from the OpenType specification (its default features and
  * layout processing) and the Unicode Standard (canonical equivalence, the

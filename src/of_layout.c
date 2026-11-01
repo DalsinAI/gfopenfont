@@ -1,7 +1,7 @@
 /* GFOpenFont's OpenType layout: GDEF glyph classes, GSUB substitutions and
  * GPOS positioning, and the old 'kern' table.
  *
- * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE).
+ * Copyright (c) 2026 AmiCradle Team. MIT licence (see LICENSE).
  *
  * Written from the OpenType specification: the common table formats
  * (ScriptList, FeatureList, LookupList, Coverage, ClassDef, Device), GDEF,

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (c) 2026 AmigaChrome Team. OpenFont, MIT licence (LICENSE).
+# Copyright (c) 2026 AmiCradle Team. OpenFont, MIT licence (LICENSE).
 # gfopenfont.library for AmigaOS 3.2 on the 68040, built with GFOpenAmigaGCC
 # 16.2.0-open4 (CI; the os32-gcc16 stove carries open3). Everything in it is
 # GFOpenFont's own code: no upstream sources are fetched.

@@ -2,7 +2,7 @@
  * written whole, read at an offset, a folder's names and its date. Every
  * call runs in the calling process (the library checks it is one).
  *
- * Copyright (c) 2026 AmigaChrome Team. OpenFont, MIT licence (LICENSE). */
+ * Copyright (c) 2026 AmiCradle Team. OpenFont, MIT licence (LICENSE). */
 #include <exec/types.h>
 #include <exec/memory.h>
 #include <dos/dos.h>

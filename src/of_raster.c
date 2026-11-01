@@ -1,7 +1,7 @@
 /* GFOpenFont's outline rasteriser: a 26.6 outline (TrueType quadratics, CFF
  * cubics) to an A8 coverage bitmap, without hinting.
  *
- * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE).
+ * Copyright (c) 2026 AmiCradle Team. MIT licence (see LICENSE).
  *
  * Exact area coverage, in integers only:
  *   - each curve is cut into straight lines, more of them the more it bends

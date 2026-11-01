@@ -1,5 +1,5 @@
 /* GFOpenBullet's core: bullet.library's glyph engine, no Amiga headers.
- * Copyright (c) 2026 AmigaChrome Team. MIT.
+ * Copyright (c) 2026 AmiCradle Team. MIT.
  *
  * Clean-room: written from the NDK 3.2 headers' published layouts and
  * comments (diskfont/glyph.h, diskfont/diskfonttag.h, diskfont/oterrors.h)

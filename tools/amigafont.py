@@ -55,7 +55,7 @@ of constant data (the TextFont's fields as macros, tf_CharData and
 tf_CharLoc as arrays), for a ROM that carries the font as graphics.library
 carries topaz.
 
-MIT, Copyright (c) 2026 AmigaChrome Team. The fonts it makes keep their
+MIT, Copyright (c) 2026 AmiCradle Team. The fonts it makes keep their
 font's licence (DejaVu: fonts/amiga/LICENSE-DejaVu.txt).
 """
 import argparse

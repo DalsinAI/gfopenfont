@@ -9,7 +9,7 @@
  *   (work notes in the PR), so the tolerance covers FreeType's error too.
  * Exit 0 when everything is within the tolerances.
  *
- * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE). */
+ * Copyright (c) 2026 AmiCradle Team. MIT licence (see LICENSE). */
 #include "gfopenfont/gfopenfont.h"
 #include "of_font.h"
 

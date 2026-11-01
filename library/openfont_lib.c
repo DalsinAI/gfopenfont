@@ -16,7 +16,7 @@
  *   fail it;
  * - it patches nothing.
  *
- * Copyright (c) 2026 AmigaChrome Team. OpenFont, MIT licence (LICENSE). */
+ * Copyright (c) 2026 AmiCradle Team. OpenFont, MIT licence (LICENSE). */
 /* The first code in the file, ahead of the OS headers: built with
  * -fno-toplevel-reorder, every function is emitted in the order it is
  * defined, and GFOpenNDK's inline headers define out-of-line varargs helpers

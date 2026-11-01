@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (c) 2026 AmigaChrome Team. OpenFont, MIT licence (LICENSE).
+# Copyright (c) 2026 AmiCradle Team. OpenFont, MIT licence (LICENSE).
 # The 68k range test, built with GFOpenAmigaGCC 16.2.0-open2.
 # That is the compiler in the os32-gcc16 stove. There is no 16.2.9-open2.
 #

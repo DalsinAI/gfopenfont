@@ -480,7 +480,7 @@ FreeType/HarfBuzz compatibility headers will be provided for the subset needed
 by existing ports, but they are compatibility front ends. New Open software
 uses GFOpenFont directly.
 
-MIT licensed AmigaChrome Team code. The Unicode data tables in
+MIT licensed AmiCradle Team code. The Unicode data tables in
 `src/of_unicode_data.c` are generated from the Unicode Character Database and
 are under the Unicode License v3
 ([LICENSES/Unicode-License-v3.txt](LICENSES/Unicode-License-v3.txt)); the
