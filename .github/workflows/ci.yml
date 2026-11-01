@@ -1,4 +1,4 @@
-name: OpenFont CI
+name: GFOpenFont CI
 
 on:
   push:
@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: DalsinAI/openamigartg
-          ref: e8924a099a52e2772ef23074cbf96948e19e11b1   # main: OpenGPU 0.24, stream v1.8 (#161)
+          ref: e8924a099a52e2772ef23074cbf96948e19e11b1   # main: GFOpenGPU 0.24, stream v1.8 (#161)
           path: openamigartg
       - name: Dependencies
         run: sudo apt-get update && sudo apt-get install -y cmake fonts-dejavu-core fonts-liberation2 fonts-noto-color-emoji libcairo2-dev
@@ -29,7 +29,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Compiler libraries
         run: sudo apt-get update && sudo apt-get install -y libgmp10 libmpfr6 libmpc3
-      - name: OpenAmigaGCC 16.2.0-open4
+      - name: GFOpenAmigaGCC 16.2.0-open4
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -40,12 +40,12 @@ jobs:
           tar -xJf openamigagcc-16.2.0-open4-x86_64-linux.tar.xz
       - name: 68040
         run: CC="$GITHUB_WORKSPACE/openamigagcc-16.2.0-open4-x86_64-linux/bin/m68k-amigaos-gcc" sh amiga/build.sh
-      - name: OpenNDK
+      - name: GFOpenNDK
         run: git clone --depth 1 https://github.com/DalsinAI/openamigasdk.git "$RUNNER_TEMP/openamigasdk"
-      - name: openfont.library
+      - name: gfopenfont.library
         run: |
           CC="$GITHUB_WORKSPACE/openamigagcc-16.2.0-open4-x86_64-linux/bin/m68k-amigaos-gcc" \
           NDK="$RUNNER_TEMP/openamigasdk/OpenNDK/Include_H" OPENGPU_INCLUDE="$RUNNER_TEMP/openamigasdk/Include" \
           sh amiga/build-library.sh
       - name: SDK files match the SFD
-        run: python3 "$RUNNER_TEMP/openamigasdk/OpenNDK/tools/ndkgen.py" --out sdk --stubs sdk/stubs --check sdk/SFD/openfont_lib.sfd
+        run: python3 "$RUNNER_TEMP/openamigasdk/OpenNDK/tools/ndkgen.py" --out sdk --stubs sdk/stubs --check sdk/SFD/gfopenfont_lib.sfd

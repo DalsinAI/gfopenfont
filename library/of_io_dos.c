@@ -1,4 +1,4 @@
-/* openfont_io.h through dos.library, for openfont.library: files read and
+/* openfont_io.h through dos.library, for gfopenfont.library: files read and
  * written whole, read at an offset, a folder's names and its date. Every
  * call runs in the calling process (the library checks it is one).
  *
@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "openfont/openfont.h"
+#include "gfopenfont/gfopenfont.h"
 #include "openfont_io.h"
 
 /* reads up to this much at a time, so a slow disk shows progress to others */

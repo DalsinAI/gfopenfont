@@ -1,4 +1,4 @@
-/* OpenFont's own font reader and outline rasteriser.
+/* GFOpenFont's own font reader and outline rasteriser.
  *
  * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE).
  *
@@ -8,7 +8,7 @@
  *
  * Integer arithmetic only, so the 68040 needs no floating point here, and the
  * rasteriser (of_raster.c) is a pure function of an outline: it can move to
- * OpenGPU later as it is. */
+ * GFOpenGPU later as it is. */
 #ifndef OF_FONT_H
 #define OF_FONT_H
 
@@ -164,7 +164,7 @@ unsigned of_font_style(const OFFont *f);
 int of_font_has_color(const OFFont *f);
 
 /* A glyph's PNG colour bitmap (CBDT/CBLC or sbix) from the strike nearest
- * ppem (openfont.h, of_face_color_png). OF_OK, or OF_ERR_FONT when the
+ * ppem (gfopenfont.h, of_face_color_png). OF_OK, or OF_ERR_FONT when the
  * glyph has none. */
 struct OFColorPng;
 int of_font_color_png(const OFFont *f, uint32_t glyph, uint32_t ppem, struct OFColorPng *out);

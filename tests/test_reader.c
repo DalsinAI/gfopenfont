@@ -1,4 +1,4 @@
-/* test_reader: OpenFont's own reader and rasteriser.
+/* test_reader: GFOpenFont's own reader and rasteriser.
  *
  *   test_reader            the rasteriser on outlines made here
  *   test_reader FONT...    and each font: its cmap, names, outlines and
@@ -10,7 +10,7 @@
  * the 68040 must print the same.
  *
  * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE). */
-#include "openfont/openfont.h"
+#include "gfopenfont/gfopenfont.h"
 #include "of_font.h"
 
 #include <stdio.h>

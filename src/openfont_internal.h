@@ -1,7 +1,7 @@
 #ifndef OPENFONT_INTERNAL_H
 #define OPENFONT_INTERNAL_H
 
-#include "openfont/openfont.h"
+#include "gfopenfont/gfopenfont.h"
 
 /* One compiled glyph. pixels may be NULL when width and height are 0.
  * Codepoints in a size are first..last, in order, with no gaps. */

@@ -1,5 +1,5 @@
 /*
- * Glyph runs drawn through OpenGPU, with a glyph cache (of_gpu.h).
+ * Glyph runs drawn through GFOpenGPU, with a glyph cache (of_gpu.h).
  *
  * The cache: atlas pages of A8 coverage (OFG_PAGE square), filled shelf by
  * shelf; a glyph's cell is found by (the face's source fingerprint, pixel
@@ -30,7 +30,7 @@
 
 #include <opengpu/stream.h>
 
-/* stream v1.8's flag (opengpu.library 0.23), for headers from before it */
+/* stream v1.8's flag (gfopengpu.library 0.23), for headers from before it */
 #ifndef OGPU_PATH_ALIASED
 #define OGPU_PATH_ALIASED 0x4000
 #endif
@@ -150,7 +150,7 @@ static void clip(OFGpu *g, long x, long y, long w, long h)
 
 static void cache_empty(OFGpu *g);
 
-/* The batch drawn; 0, or OF_ERR_GPU with OpenGPU's error kept. */
+/* The batch drawn; 0, or OF_ERR_GPU with GFOpenGPU's error kept. */
 static long flush(OFGpu *g)
 {
     long r = 0;

@@ -1,11 +1,11 @@
-/* OpenFontLibTest: openfont.library's calls on AmigaOS 3.2, for a lab.
+/* OpenFontLibTest: gfopenfont.library's calls on AmigaOS 3.2, for a lab.
  *
  *   OpenFontLibTest FONT/A,FONTDIR/A,CACHE,OUTLINE/K,COLOR/K
  *
  * FONT is DejaVuSans.ttf: the shaping and raster hash, and the layout
  * hash of revision 3's calls, must be the ones the host's
  * tests/test_openfont.c prints for it at 16 pixels (EXPECT below), since
- * both run OpenFont's own reader, shaper and rasteriser (integers only).
+ * both run GFOpenFont's own reader, shaper and rasteriser (integers only).
  * FONTDIR holds DejaVu
  * and Liberation, for the index, the aliases and fallback. CACHE is an
  * .ofc file openfontcompile made on the host from FONT (sizes 9 12 16 24).
@@ -17,7 +17,7 @@
  * PNG datatype and prints its pixels' hash (ARGB bytes, FNV-1a), which
  * tests/ref/color_png_hash.py gives on the host for the same font.
  *
- * Revision 5's OF_DrawGlyphsA draws two runs through opengpu.library (which
+ * Revision 5's OF_DrawGlyphsA draws two runs through gfopengpu.library (which
  * must be in LIBS:, 0.18 or later) as tests/test_gpu.c's lab_hash does on
  * the host, and the pixels' hash must be the one it prints (LAB).
  *
@@ -34,8 +34,8 @@
 #include <proto/dos.h>
 #include <proto/graphics.h>
 #include <graphics/text.h>
-#include <libraries/openfont.h>
-#include <proto/openfont.h>
+#include <libraries/gfopenfont.h>
+#include <proto/gfopenfont.h>
 #include <opengpu/stream.h>
 
 #include <stdio.h>
@@ -47,7 +47,7 @@
 #define EXPECT_HASH 0x3a37fb49UL
 /* and its LAYOUT line: revision 3's calls */
 #define EXPECT_LAYOUT_HASH 0xc78fcff5UL
-/* tests/test_gpu.c's LAB line: revision 5's OF_DrawGlyphsA on OpenGPU */
+/* tests/test_gpu.c's LAB line: revision 5's OF_DrawGlyphsA on GFOpenGPU */
 #define EXPECT_GPU_HASH 0x2734c1bcUL
 
 struct Library *OpenFontBase;
@@ -114,14 +114,14 @@ int main(void)
         printf("usage: OpenFontLibTest FONT/A,FONTDIR/A,CACHE,OUTLINE/K,COLOR/K\n");
         return 20;
     }
-    OpenFontBase = OpenLibrary((CONST_STRPTR)"openfont.library", 1);
-    check(OpenFontBase != NULL, "openfont.library 1 opens");
+    OpenFontBase = OpenLibrary((CONST_STRPTR)"gfopenfont.library", 1);
+    check(OpenFontBase != NULL, "gfopenfont.library 1 opens");
     if (!OpenFontBase) {
         FreeArgs(rda);
         printf("OPENFONTLIB FAIL 1\n");
         return 20;
     }
-    printf("     openfont.library %u.%u, OpenFont %lu.%lu\n", OpenFontBase->lib_Version,
+    printf("     gfopenfont.library %u.%u, GFOpenFont %lu.%lu\n", OpenFontBase->lib_Version,
            OpenFontBase->lib_Revision, (unsigned long)(OF_Version() >> 16), (unsigned long)(OF_Version() & 0xFFFF));
     check(sizeof(struct OFGlyph) == 28 && sizeof(struct OFBitmap) == 28 && sizeof(struct OFFaceInfo) == 176,
           "structure sizes match the library's");
@@ -157,7 +157,7 @@ int main(void)
         check(OF_CharIndex(face, 'A') != 0 && OF_CharIndex(face, 0x10FFFD) == 0, "OF_CharIndex");
 
         /* revision 3: what a layout engine asks */
-        check(OpenFontBase->lib_Revision >= OPENFONT_REVISION_LAYOUT, "openfont.library 1.3: OF_ShapeA");
+        check(OpenFontBase->lib_Revision >= OPENFONT_REVISION_LAYOUT, "gfopenfont.library 1.3: OF_ShapeA");
         check(sizeof(struct OFFeature) == 16 && sizeof(struct OFFaceMetrics) == 56 &&
               sizeof(struct OFGlyphExtents) == 16 && sizeof(struct OFOutline) == 24,
               "revision 3's structure sizes");
@@ -270,12 +270,12 @@ int main(void)
             }
         }
 
-        /* revision 5: glyph runs through OpenGPU, as tests/test_gpu.c's lab_hash */
-        check(OpenFontBase->lib_Revision >= OPENFONT_REVISION_GPU, "openfont.library 1.5: OF_DrawGlyphsA");
+        /* revision 5: glyph runs through GFOpenGPU, as tests/test_gpu.c's lab_hash */
+        check(OpenFontBase->lib_Revision >= OPENFONT_REVISION_GPU, "gfopenfont.library 1.5: OF_DrawGlyphsA");
         check(sizeof(struct OFGPUTarget) == 40 && sizeof(struct OFGlyphRun) == 32 && sizeof(struct OFGPUStats) == 16,
               "revision 5's structures have the library's sizes");
         if (OpenFontBase->lib_Revision >= OPENFONT_REVISION_GPU) {
-            static const char gtext[] = "OpenFont through OpenGPU";
+            static const char gtext[] = "GFOpenFont through GFOpenGPU";
             static LONG shear[4] = { 65536, -13107, 0, 65536 };
             static ULONG gl[32];
             static LONG gp[64];
@@ -302,7 +302,7 @@ int main(void)
                 gr.gr_Color = 0xFF000000UL; gr.gr_Operator = OGPU_PD_OVER;
                 rc = OF_DrawGlyphs(face, &gt, &gr, OFA_GPUError, (ULONG)&gerr, OFA_GPUStats, (ULONG)&st, TAG_END);
                 if (rc == OFERR_NOGPU) {
-                    printf("     OF_DrawGlyphsA: no opengpu.library 0.18 or later in LIBS:, not run\n");
+                    printf("     OF_DrawGlyphsA: no gfopengpu.library 0.18 or later in LIBS:, not run\n");
                 } else {
                     for (i = 0; i < gn; i++)
                         gp[2 * i + 1] += 18 * 256;
@@ -450,7 +450,7 @@ int main(void)
     check(!strcmp((const char *)OF_ErrorString(OFERR_FONT), "font error"), "OF_ErrorString");
 
     /* Amiga fonts as TextFonts, without diskfont.library */
-    check(OpenFontBase->lib_Revision >= OPENFONT_REVISION_TEXTFONT, "openfont.library 1.2: OF_OpenTextFont");
+    check(OpenFontBase->lib_Revision >= OPENFONT_REVISION_TEXTFONT, "gfopenfont.library 1.2: OF_OpenTextFont");
     GfxBase = (struct GfxBase *)OpenLibrary((CONST_STRPTR)"graphics.library", 39);
     if (GfxBase && OpenFontBase->lib_Revision >= OPENFONT_REVISION_TEXTFONT) {
         struct TextAttr ta = { (STRPTR)"topaz.font", 8, 0, 0 };

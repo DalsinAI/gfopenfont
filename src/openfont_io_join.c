@@ -1,7 +1,7 @@
 /* of_io_join: one folder and one name, the way AmigaOS and POSIX both read
  * them ("FONTS:" and "dir/" take no separator). Copyright (c) 2026
- * AmigaChrome Team. OpenFont, MIT licence (LICENSE). */
-#include "openfont/openfont.h"
+ * AmigaChrome Team. GFOpenFont, MIT licence (LICENSE). */
+#include "gfopenfont/gfopenfont.h"
 #include "openfont_io.h"
 
 #include <string.h>

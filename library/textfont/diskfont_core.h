@@ -1,4 +1,4 @@
-/* OpenDiskFont's core: diskfont.library's work, no Amiga headers.
+/* GFOpenDiskFont's core: diskfont.library's work, no Amiga headers.
  * Copyright (c) 2026 AmigaChrome Team. MIT.
  *
  * Clean-room: written from the diskfont autodocs' documented behaviour and
@@ -318,7 +318,7 @@ struct odf_env {
     void (*seg_unload)(struct odf_ctx *c, void *seg);
     /* graphics: walks GfxBase->TextFonts (each returns non-zero to stop) */
     void (*mem_fonts)(struct odf_ctx *c, odf_font_each each, void *data);
-    struct odf_TextFont *(*open_font)(struct odf_ctx *c, struct odf_TextFont *tf); /* OpenFont giving tf */
+    struct odf_TextFont *(*open_font)(struct odf_ctx *c, struct odf_TextFont *tf); /* GFOpenFont giving tf */
     void (*close_font)(struct odf_ctx *c, struct odf_TextFont *tf);
     void (*add_font)(struct odf_ctx *c, struct odf_TextFont *tf);
     /* RemFont, only when nobody has tf open (tf_Accessors 0, checked with
@@ -348,7 +348,7 @@ struct odf_env {
  * dfh_Segment 0, or the DPI tags there with FSF_TAGGED), or NULL, and
  * then the bitmap sizes the .font lists are scaled like any other's.
  * odf_Init sets odf_engine_outline: the .otag's engine (bullet.library)
- * through the env draws every glyph. OpenFont (openfont.library) is meant
+ * through the env draws every glyph. GFOpenFont (gfopenfont.library) is meant
  * to replace it. dir is the directory the .font was found in; ta's name
  * is the request's. */
 struct odf_outline {

@@ -1,4 +1,4 @@
-/* OpenDiskFont's core: diskfont.library's work in lean C++.
+/* GFOpenDiskFont's core: diskfont.library's work in lean C++.
  * Copyright (c) 2026 AmigaChrome Team. MIT.
  *
  * Clean-room: written from the diskfont autodocs' documented behaviour and

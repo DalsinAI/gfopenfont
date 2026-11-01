@@ -1,13 +1,13 @@
-/* OpenFont's CFF reader: the outlines of an OpenType font with a 'CFF '
+/* GFOpenFont's CFF reader: the outlines of an OpenType font with a 'CFF '
  * table, plain or CID-keyed, through a Type 2 charstring interpreter.
  *
  * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE).
  *
  * From Adobe's published specifications: "The Compact Font Format
  * Specification" (Technical Note #5176) and "The Type 2 Charstring Format"
- * (Technical Note #5177). Hints are read past and not used: OpenFont draws
+ * (Technical Note #5177). Hints are read past and not used: GFOpenFont draws
  * without hinting. Numbers are 16.16 fixed point throughout. */
-#include "openfont/openfont.h"
+#include "gfopenfont/gfopenfont.h"
 #include "of_font.h"
 
 #include <stdlib.h>
