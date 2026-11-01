@@ -6,7 +6,7 @@
  * usage: test_color COLOUR_FONT [PLAIN_FONT]
  *
  * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE). */
-#include "openfont/openfont.h"
+#include "gfopenfont/gfopenfont.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

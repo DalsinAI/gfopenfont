@@ -1,7 +1,7 @@
-/* OpenMulticore range against the CPU loop. Amiga only.
+/* GFOpenMulticore range against the CPU loop. Amiga only.
  * Build: amiga/build.sh with OMC_INC pointing at openamigamulticore/include
  * and the NDK. */
-#include "openfont/openfont.h"
+#include "gfopenfont/gfopenfont.h"
 #include "openfont_internal.h"
 
 #include <libraries/openmulticore.h>
@@ -152,7 +152,7 @@ int main(void)
     if (!slots_match(cpu, via, N))
         return fail("old library bytes");
 
-    OpenMulticoreBase = open_library("openmulticore.library", 0);
+    OpenMulticoreBase = open_library("gfopenmulticore.library", 0);
     if (!OpenMulticoreBase)
         return fail("OpenLibrary");
     if (!OMC_HAS_RANGE(OpenMulticoreBase)) {

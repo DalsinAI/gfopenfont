@@ -1,11 +1,11 @@
 /*
- * Glyph runs drawn through OpenGPU (src/of_gpu.c, what openfont.library's
+ * Glyph runs drawn through GFOpenGPU (src/of_gpu.c, what gfopenfont.library's
  * OF_DrawGlyphsA does) on openamigartg's CPU core, against cairo:
  *  - cairo filling the same outlines at the same (quarter-pixel) positions:
  *    away from the glyphs' edges the pixels must be the same, at the edges
  *    (where the two rasterisers each anti-alias) within a bound;
  *  - the cache against OF_GPU_NOCACHE (each outline filled onto the target):
- *    the same pixels, as OpenGPU composites a cell's coverage as PATH_FILL
+ *    the same pixels, as GFOpenGPU composites a cell's coverage as PATH_FILL
  *    does;
  *  - a clip mask (cairo: the glyphs' coverage times the mask, the colour
  *    through it), anti-aliasing off, a matrix, a translucent colour, an
@@ -232,7 +232,7 @@ static void layout(const char *text, uint32_t size, long x, long y)
     }
 }
 
-/* cairo: each glyph's outline at the position OpenGPU puts it (x to the
+/* cairo: each glyph's outline at the position GFOpenGPU puts it (x to the
  * nearest quarter pixel, y to the nearest pixel; exact under a matrix). */
 static void cairo_glyphs(cairo_t *cr, uint32_t size, const double *m, int rounded)
 {
@@ -369,7 +369,7 @@ static void cairo_run(uint32_t size, unsigned long colour, const double *m, int 
 #define LAB_H 40
 static unsigned long lab_hash(OFGpu *g)
 {
-    static const char lab_text[] = "OpenFont through OpenGPU";
+    static const char lab_text[] = "GFOpenFont through GFOpenGPU";
     static const int32_t lab_m[4] = { 65536, -13107, 0, 65536 };   /* a 0.2 shear */
     OFGpuTarget t;
     OFGpuRun r;

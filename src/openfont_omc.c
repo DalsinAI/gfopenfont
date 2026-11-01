@@ -1,4 +1,4 @@
-/* OpenFont on Amiga: the same fill worker, on a cores board or the main CPU.
+/* GFOpenFont on Amiga: the same fill worker, on a cores board or the main CPU.
  *
  * Not part of the x86/ARM64 bootstrap. Build it with the os32 stove, next to
  * a checkout of openamigamulticore:
@@ -17,7 +17,7 @@
  * set OMCF_BOARD. A machine with no cores board still gets the glyphs.
  */
 
-#include "openfont/openfont.h"
+#include "gfopenfont/gfopenfont.h"
 #include "openfont_internal.h"
 
 #include <libraries/openmulticore.h>

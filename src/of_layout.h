@@ -1,4 +1,4 @@
-/* OpenFont's OpenType layout: GDEF, GSUB and GPOS, applied to a run of
+/* GFOpenFont's OpenType layout: GDEF, GSUB and GPOS, applied to a run of
  * glyphs, and the shaper around them (of_shape.c).
  *
  * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE).
@@ -12,7 +12,7 @@
 #include <stdint.h>
 
 #include "of_font.h"
-#include "openfont/openfont.h"
+#include "gfopenfont/gfopenfont.h"
 
 /* glyph classes (GDEF) */
 #define OF_CLASS_BASE      1

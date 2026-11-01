@@ -1,11 +1,11 @@
-/* OpenBullet's core: bullet.library's glyph engine, no Amiga headers.
+/* GFOpenBullet's core: bullet.library's glyph engine, no Amiga headers.
  * Copyright (c) 2026 AmigaChrome Team. MIT.
  *
  * Clean-room: written from the NDK 3.2 headers' published layouts and
  * comments (diskfont/glyph.h, diskfont/diskfonttag.h, diskfont/oterrors.h)
  * and the bullet.library and diskfont.library autodocs; never from
  * Kickstart, Agfa, Hyperion or AROS code. Fonts are read and drawn by
- * OpenFont, through the env. Where those leave a corner open, bullet_core.cpp
+ * GFOpenFont, through the env. Where those leave a corner open, bullet_core.cpp
  * says "ABI test" and tests/BulletABITest measures OS 3.2's answer.
  *
  * The core is lean C++ (openamigagcc docs/lean-cxx.md, library profile);
@@ -138,8 +138,8 @@ struct obl_GlyphWidthEntry {
 
 /* ---- the env ------------------------------------------------------------ */
 
-/* One glyph's 8-bit coverage, as OpenFont draws it: 0 clear, 255 solid,
- * rows top down. The same layout as openfont.library's struct OFBitmap. */
+/* One glyph's 8-bit coverage, as GFOpenFont draws it: 0 clear, 255 solid,
+ * rows top down. The same layout as gfopenfont.library's struct OFBitmap. */
 struct obl_a8 {
     obl_u32 width, height;
     obl_s32 left;                      /* from the origin to the left column */
@@ -153,10 +153,10 @@ struct obl_env {
     /* exec: cleared memory (AllocVec MEMF_CLEAR on the Amiga); NULL when out */
     void *(*alloc)(void *user, obl_u32 size);
     void (*free)(void *user, void *mem);          /* NULL is allowed */
-    /* The font, through OpenFont (openfont.library on the Amiga). The core
+    /* The font, through GFOpenFont (gfopenfont.library on the Amiga). The core
      * reads no font file and draws no outline itself.
      * face_open: the first face of the outline file at path, or NULL when
-     * there is none OpenFont reads (or no OpenFont); *upm its units per em. */
+     * there is none GFOpenFont reads (or no GFOpenFont); *upm its units per em. */
     void *(*face_open)(void *user, const char *path, obl_u32 *upm);
     void (*face_close)(void *user, void *face);
     /* the glyph a code maps to, 0 when none */
@@ -171,7 +171,7 @@ struct obl_env {
     obl_s32 (*kern)(void *user, void *face, obl_u32 left, obl_u32 right);
 };
 
-/* raster's errors: openfont.library's OFERR_ values */
+/* raster's errors: gfopenfont.library's OFERR_ values */
 #define OBL_OF_ARGUMENT (-1L)
 #define OBL_OF_MEMORY   (-2L)
 #define OBL_OF_FONT     (-4L)

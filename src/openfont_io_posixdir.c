@@ -1,5 +1,5 @@
 /* openfont_io.h's folders on a POSIX host. Copyright (c) 2026 AmigaChrome Team. MIT. */
-#include "openfont/openfont.h"
+#include "gfopenfont/gfopenfont.h"
 #include "openfont_io.h"
 
 #include <dirent.h>

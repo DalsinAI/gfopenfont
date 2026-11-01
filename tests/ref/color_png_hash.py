@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The pixel hash OpenFontLibTest prints for COLOR (U+1F600 at 20 pixels
 through OF_GlyphColorBitmap), worked out on the host: the same PNG as
-OpenFont picks (HarfBuzz's strike choice is the same), decoded with Pillow
+GFOpenFont picks (HarfBuzz's strike choice is the same), decoded with Pillow
 to ARGB, hashed with FNV-1a over the bytes A, R, G, B of each pixel.
 
     tests/ref/color_png_hash.py /usr/share/fonts/truetype/noto/NotoColorEmoji.ttf

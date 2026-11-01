@@ -1,4 +1,4 @@
-/* compare_harfbuzz: OpenFont's own shaper against HarfBuzz, for the
+/* compare_harfbuzz: GFOpenFont's own shaper against HarfBuzz, for the
  * reference gate of stage 2. Host only; it links a HarfBuzz build the
  * caller gives (OPENFONT_HARFBUZZ_REF).
  *
@@ -6,18 +6,18 @@
  *
  * Every line of TEXTFILE (UTF-8), and a few broken UTF-8 strings, shaped by
  * both at 12, 16 and 33 pixels. HarfBuzz runs with its OpenType functions
- * and OpenFont's glyph advances (as openfont.library did before its own
+ * and GFOpenFont's glyph advances (as gfopenfont.library did before its own
  * shaper), script and direction guessed from the text. The glyphs, their
  * clusters, advances and offsets must be the same, and so must the
  * unsafe-to-break flags.
  *
  * Known differences, counted apart and not failures:
- *   - right-to-left runs (OpenFont shapes left to right only for now);
+ *   - right-to-left runs (GFOpenFont shapes left to right only for now);
  *   - .notdef marks in a font with no GPOS: HarfBuzz places them by a rule
- *     of its own; OpenFont leaves them at the pen.
+ *     of its own; GFOpenFont leaves them at the pen.
  *
  * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE). */
-#include "openfont/openfont.h"
+#include "gfopenfont/gfopenfont.h"
 #include "of_font.h"
 #include "of_layout.h"
 #include "of_unicode.h"
@@ -118,7 +118,7 @@ static void compare(Face *face, hb_font_t *hb, const char *name, const char *tex
             for (i = 0; i < n; ++i)
                 printf(" %u/%u/%d/%d/%d%s", info[i].codepoint, info[i].cluster, pos[i].x_advance, pos[i].x_offset,
                        pos[i].y_offset, (hb_glyph_info_get_glyph_flags(&info[i]) & HB_GLYPH_FLAG_UNSAFE_TO_BREAK) ? "u" : "");
-            printf("\n  OpenFont:");
+            printf("\n  GFOpenFont:");
             for (i = 0; i < b.n; ++i)
                 printf(" %u/%u/%d/%d/%d%s", b.g[i].gid, b.g[i].cluster, b.g[i].xa, b.g[i].xo, b.g[i].yo,
                        (b.g[i].props & OF_SH_UNSAFE) ? "u" : "");

@@ -1,4 +1,4 @@
-/* OpenFont's shaper: UTF-8 text to positioned glyphs, for left-to-right
+/* GFOpenFont's shaper: UTF-8 text to positioned glyphs, for left-to-right
  * scripts written letter by letter (Latin, Greek, Cyrillic and the like).
  *
  * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE).
@@ -20,7 +20,7 @@
  *   6. advances, then GPOS (or 'kern'), marks' advances zeroed and marks
  *      placed on their bases;
  *   7. the default ignorables hidden: the space glyph, no advance. */
-#include "openfont/openfont.h"
+#include "gfopenfont/gfopenfont.h"
 #include "of_layout.h"
 #include "of_unicode.h"
 

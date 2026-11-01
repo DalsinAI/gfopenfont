@@ -1,5 +1,5 @@
-/* The C library pieces that OpenFont's core uses
- * inside openfont.library: memory from one Exec pool. Every call into the
+/* The C library pieces that GFOpenFont's core uses
+ * inside gfopenfont.library: memory from one Exec pool. Every call into the
  * core holds the library's lock, so the pool needs no lock of its own.
  * The library runs no C startup and keeps no stdio: the rest of what the
  * core calls (memcpy, strlen, qsort) is libnix's, which keeps no state
