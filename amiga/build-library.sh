@@ -113,6 +113,14 @@ if [ "$("$NM" "$OUT/gfopenfont.library" | awk '$3 == "_start" {print $1}')" != 0
     echo "start() is not at the beginning of the code" >&2
     exit 1
 fi
+# no OS library base may come from libstubs, and no C library state from
+# _impure_ptr: only a program's startup sets either up, so in a library a
+# call through one jumps into nowhere
+if grep -Eq 'libstubs\.a\(|\(_impure_ptr\)' "$OUT/openfont.library.map"; then
+    echo "the library uses what only a program's startup sets up:" >&2
+    grep -E -B1 'libstubs\.a\(|\(_impure_ptr\)' "$OUT/openfont.library.map" >&2
+    exit 1
+fi
 if [ -s "$OUT/undefined.txt" ]; then
     echo "undefined symbols:" >&2
     cat "$OUT/undefined.txt" >&2

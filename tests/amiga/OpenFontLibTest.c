@@ -364,7 +364,10 @@ int main(void)
     if (found) {
         OF_GetFaceInfo(found, &info);
         printf("     monospace 700 -> %s %s\n", info.fi_Family, info.fi_Style);
-        check(!strcmp(info.fi_Family, "DejaVu Sans Mono") && info.fi_Weight == 700, "monospace bold");
+        /* the first of the monospace alias's families FONTDIR has: DejaVu
+         * Sans Mono on the host, Liberation Mono where DejaVu has no Mono */
+        check((!strcmp(info.fi_Family, "DejaVu Sans Mono") || !strcmp(info.fi_Family, "Liberation Mono") ||
+               !strcmp(info.fi_Family, "Noto Sans Mono")) && info.fi_Weight == 700, "monospace bold");
         OF_CloseFace(found);
     } else {
         check(0, "OF_FindFace(\"monospace\")");
