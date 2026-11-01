@@ -14,7 +14,7 @@
  *    the atlas, and what is drawn after is still right.
  *   test_gpu FONT.ttf        (needs cairo, and openamigartg's include and
  *                             library/opengpu/ogpu_core.c)
- * MIT, Copyright (c) 2026 AmigaChrome Team.
+ * MIT, Copyright (c) 2026 AmiCradle Team.
  * SPDX-License-Identifier: MIT
  */
 #include <cairo.h>

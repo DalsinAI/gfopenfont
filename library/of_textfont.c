@@ -15,7 +15,7 @@
  * nothing is opened. Any other engine an .otag names is opened as
  * diskfont.library would open it.
  *
- * Copyright (c) 2026 AmigaChrome Team. OpenFont, MIT licence (LICENSE). */
+ * Copyright (c) 2026 AmiCradle Team. OpenFont, MIT licence (LICENSE). */
 #include <exec/types.h>
 #include <exec/memory.h>
 #include <exec/libraries.h>

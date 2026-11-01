@@ -20,7 +20,7 @@
  * A glyph x position goes to the nearest quarter pixel, y to the nearest
  * pixel. Under a matrix, or with OF_GPU_NOCACHE, each glyph's outline is
  * filled straight onto the target, under the clip mask if there is one.
- * MIT, Copyright (c) 2026 AmigaChrome Team.
+ * MIT, Copyright (c) 2026 AmiCradle Team.
  * SPDX-License-Identifier: MIT
  */
 #include "of_gpu.h"

@@ -1,7 +1,7 @@
 /* GFOpenFont's CFF reader: the outlines of an OpenType font with a 'CFF '
  * table, plain or CID-keyed, through a Type 2 charstring interpreter.
  *
- * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE).
+ * Copyright (c) 2026 AmiCradle Team. MIT licence (see LICENSE).
  *
  * From Adobe's published specifications: "The Compact Font Format
  * Specification" (Technical Note #5176) and "The Type 2 Charstring Format"

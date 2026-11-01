@@ -6,7 +6,7 @@
  * something in it changed. Faces are read through a stream, so indexing a
  * large font reads only its header and the tables the index needs.
  *
- * Copyright (c) 2026 AmigaChrome Team. OpenFont, MIT licence (LICENSE). */
+ * Copyright (c) 2026 AmiCradle Team. OpenFont, MIT licence (LICENSE). */
 #ifndef OPENFONT_INDEX_H
 #define OPENFONT_INDEX_H
 

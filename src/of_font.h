@@ -1,6 +1,6 @@
 /* GFOpenFont's own font reader and outline rasteriser.
  *
- * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE).
+ * Copyright (c) 2026 AmiCradle Team. MIT licence (see LICENSE).
  *
  * Written from the OpenType specification (the sfnt container, cmap, head,
  * hhea, hmtx, maxp, name, OS/2, post, loca and glyf tables, and the CFF and

@@ -10,7 +10,7 @@ are in font units and nothing is rounded. Prints each line that differs
 and a count; exits 1 when any did. Only for testing: nothing of HarfBuzz's
 is in GFOpenFont.
 
-Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE).
+Copyright (c) 2026 AmiCradle Team. MIT licence (see LICENSE).
 """
 import subprocess
 import sys

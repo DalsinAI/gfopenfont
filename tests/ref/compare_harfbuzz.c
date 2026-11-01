@@ -16,7 +16,7 @@
  *   - .notdef marks in a font with no GPOS: HarfBuzz places them by a rule
  *     of its own; GFOpenFont leaves them at the pen.
  *
- * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE). */
+ * Copyright (c) 2026 AmiCradle Team. MIT licence (see LICENSE). */
 #include "gfopenfont/gfopenfont.h"
 #include "of_font.h"
 #include "of_layout.h"

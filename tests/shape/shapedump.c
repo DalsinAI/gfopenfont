@@ -7,7 +7,7 @@
  * One line per run: font, size, line number, then glyph/cluster/advance/
  * x offset/y offset/flags for each glyph.
  *
- * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE). */
+ * Copyright (c) 2026 AmiCradle Team. MIT licence (see LICENSE). */
 #include "gfopenfont/gfopenfont.h"
 
 #include <stdio.h>

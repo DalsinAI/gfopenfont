@@ -3,7 +3,7 @@
  * Written for the library as much as for the host: no stdio, no sprintf,
  * no locale. Memory comes from malloc, which gfopenfont.library supplies.
  *
- * Copyright (c) 2026 AmigaChrome Team. OpenFont, MIT licence (LICENSE). */
+ * Copyright (c) 2026 AmiCradle Team. OpenFont, MIT licence (LICENSE). */
 #include "openfont_index.h"
 #include "openfont_internal.h"
 #include "openfont_io.h"

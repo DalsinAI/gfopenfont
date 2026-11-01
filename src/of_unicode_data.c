@@ -4,7 +4,7 @@
  *
  * The data: Copyright (c) 1991-2024 Unicode, Inc., under the Unicode
  * License v3 (LICENSES/Unicode-License-v3.txt). The code around it:
- * Copyright (c) 2026 AmigaChrome Team, MIT licence (see LICENSE). */
+ * Copyright (c) 2026 AmiCradle Team, MIT licence (see LICENSE). */
 #include "of_unicode.h"
 
 #include <stddef.h>

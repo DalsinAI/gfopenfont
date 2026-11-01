@@ -8,7 +8,7 @@
  * Version 1 is a preview: its calls and structures may still change. They
  * are frozen from version 2, once GFOpenFont's design tests pass.
  *
- * Copyright (c) 2026 AmigaChrome Team. OpenFont, MIT licence (LICENSE). */
+ * Copyright (c) 2026 AmiCradle Team. OpenFont, MIT licence (LICENSE). */
 
 #ifndef EXEC_TYPES_H
 #include <exec/types.h>

@@ -1,5 +1,5 @@
 /* gfopenfont.library's Amiga fonts: OF_OpenTextFont's work (of_textfont.c).
- * Copyright (c) 2026 AmigaChrome Team. OpenFont, MIT licence (LICENSE). */
+ * Copyright (c) 2026 AmiCradle Team. OpenFont, MIT licence (LICENSE). */
 #ifndef OF_TEXTFONT_H
 #define OF_TEXTFONT_H
 

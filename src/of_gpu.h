@@ -6,7 +6,7 @@
  * COMPOSITE_PD of the run's colour through that cell. Glyphs under a
  * transform other than a scale are filled from their outlines each time.
  * Plain C over a submit function, so the host tests run it on
- * openamigartg's CPU core. MIT, Copyright (c) 2026 AmigaChrome Team.
+ * openamigartg's CPU core. MIT, Copyright (c) 2026 AmiCradle Team.
  * SPDX-License-Identifier: MIT
  */
 #ifndef OF_GPU_H

@@ -1,5 +1,5 @@
 /* openfont_io.h's files through C's stdio: for the host, and for 68k
- * programs linked with libnix. Copyright (c) 2026 AmigaChrome Team. MIT. */
+ * programs linked with libnix. Copyright (c) 2026 AmiCradle Team. MIT. */
 #include "gfopenfont/gfopenfont.h"
 #include "openfont_io.h"
 

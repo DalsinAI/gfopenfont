@@ -1,5 +1,5 @@
 /* GFOpenDiskFont's core: diskfont.library's work, no Amiga headers.
- * Copyright (c) 2026 AmigaChrome Team. MIT.
+ * Copyright (c) 2026 AmiCradle Team. MIT.
  *
  * Clean-room: written from the diskfont autodocs' documented behaviour and
  * the NDK 3.2 layouts (diskfont/diskfont.h, diskfont/diskfonttag.h,

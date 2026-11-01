@@ -4,7 +4,7 @@
  * and openfont_io_posixdir.c; gfopenfont.library uses library/of_io_dos.c,
  * which goes through dos.library and owns no C library state.
  *
- * Copyright (c) 2026 AmigaChrome Team. OpenFont, MIT licence (LICENSE). */
+ * Copyright (c) 2026 AmiCradle Team. OpenFont, MIT licence (LICENSE). */
 #ifndef OPENFONT_IO_H
 #define OPENFONT_IO_H
 

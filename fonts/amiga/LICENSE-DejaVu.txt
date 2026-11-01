@@ -1,7 +1,7 @@
 DejaVu Sans Mono as Amiga bitmap fonts: DejaVuSansMono.font and the
 DejaVuSansMono drawer (8 to 24 pixels high: 8, 9, 10, 11, 12, 13, 14, 16, 18,
 20, 22 and 24), and the 11 as C data for a ROM (amigafont.py c), made by the
-AmigaChrome Team's tools/amigafont.py from DejaVuSansMono.ttf, DejaVu fonts
+AmiCradle Team's tools/amigafont.py from DejaVuSansMono.ttf, DejaVu fonts
 2.37 (https://dejavu-fonts.github.io/). They are Font Software under the
 licence below, modified (drawn as bitmaps), and named without the words
 "Bitstream" and "Vera" as it asks. tools/amigafont.py itself is MIT (LICENSE).

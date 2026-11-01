@@ -8,7 +8,7 @@ to ARGB, hashed with FNV-1a over the bytes A, R, G, B of each pixel.
 
 Needs uharfbuzz and Pillow (pip install uharfbuzz pillow); only for testing.
 
-Copyright (c) 2026 AmigaChrome Team. OpenFont, MIT licence (LICENSE)."""
+Copyright (c) 2026 AmiCradle Team. OpenFont, MIT licence (LICENSE)."""
 import io
 import sys
 
