@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""OpenFont's shaper against HarfBuzz (the uharfbuzz module), for the
+"""GFOpenFont's shaper against HarfBuzz (the uharfbuzz module), for the
 directions, scripts, languages and features WebCore asks for.
 
     compare_uharfbuzz.py SHAPEOPTS FONT DIRECTION SCRIPT LANGUAGE FEATURES TEXTFILE [utf16]
@@ -8,7 +8,7 @@ The arguments after SHAPEOPTS are shapeopts' (tests/shape/shapeopts.c),
 less its pixel size: both shape at the font's units per em, so positions
 are in font units and nothing is rounded. Prints each line that differs
 and a count; exits 1 when any did. Only for testing: nothing of HarfBuzz's
-is in OpenFont.
+is in GFOpenFont.
 
 Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE).
 """

@@ -1,4 +1,4 @@
-/* OpenFont's OpenType layout: GDEF glyph classes, GSUB substitutions and
+/* GFOpenFont's OpenType layout: GDEF glyph classes, GSUB substitutions and
  * GPOS positioning, and the old 'kern' table.
  *
  * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE).
@@ -10,7 +10,7 @@
  *
  * Every read is checked against its table's length: a damaged table reads
  * as zeros past its end, which stops the walk, never the program. */
-#include "openfont/openfont.h"
+#include "gfopenfont/gfopenfont.h"
 #include "of_layout.h"
 #include "of_unicode.h"
 

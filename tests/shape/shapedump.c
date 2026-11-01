@@ -1,6 +1,6 @@
-/* shapedump: every line of a text file shaped by OpenFont, glyph by glyph,
- * at a few sizes, for comparing two builds of OpenFont (one shaping with
- * HarfBuzz, one with OpenFont's own shaper).
+/* shapedump: every line of a text file shaped by GFOpenFont, glyph by glyph,
+ * at a few sizes, for comparing two builds of GFOpenFont (one shaping with
+ * HarfBuzz, one with GFOpenFont's own shaper).
  *
  *   shapedump TEXTFILE FONT...
  *
@@ -8,7 +8,7 @@
  * x offset/y offset/flags for each glyph.
  *
  * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE). */
-#include "openfont/openfont.h"
+#include "gfopenfont/gfopenfont.h"
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -14,7 +14,7 @@
  * of_cache_fill_range is the fast path. Each index writes only its own
  * OFRangeSlot. With no executor, or below the break-even, the worker
  * runs in a loop on this CPU. That loop is the 68k fallback. An executor
- * (OpenMulticore's OMC_RunRange on Amiga) calls the same worker.
+ * (GFOpenMulticore's OMC_RunRange on Amiga) calls the same worker.
  */
 
 #define OF_CACHE_MAX_SIZES 64

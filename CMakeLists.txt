@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
-project(OpenFont C)
+project(GFOpenFont C)
 
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-# Fonts are read, shaped and drawn by OpenFont's own code (src/of_*.c); it
+# Fonts are read, shaped and drawn by GFOpenFont's own code (src/of_*.c); it
 # needs nothing but a C compiler.
 add_library(openfont STATIC src/openfont.c src/of_font.c src/of_cff.c src/of_raster.c
             src/of_layout.c src/of_shape.c src/of_unicode_data.c
@@ -99,9 +99,9 @@ if(Python3_Interpreter_FOUND)
              check ${CMAKE_CURRENT_SOURCE_DIR}/fonts/amiga/DejaVuSansMono.font)
 endif()
 
-# The reference gate: OpenFont's reader and rasteriser against FreeType
+# The reference gate: GFOpenFont's reader and rasteriser against FreeType
 # (unhinted), given a FreeType build (its source folder, with the library
-# built in build/). Only for testing; nothing of FreeType's is in OpenFont.
+# built in build/). Only for testing; nothing of FreeType's is in GFOpenFont.
 set(OPENFONT_FREETYPE_REF "" CACHE PATH "a FreeType source tree with build/libfreetype.a, for compare_freetype")
 if(OPENFONT_FREETYPE_REF)
     add_executable(compare_freetype tests/ref/compare_freetype.c src/of_font.c src/of_cff.c src/of_raster.c)
@@ -113,9 +113,9 @@ if(OPENFONT_FREETYPE_REF)
     endif()
 endif()
 
-# The reference gate for the shaper: OpenFont against HarfBuzz, given
+# The reference gate for the shaper: GFOpenFont against HarfBuzz, given
 # HarfBuzz's release sources (the folder harfbuzz-14.5.1.tar.xz unpacks to),
-# built here for this test only; nothing of HarfBuzz's is in OpenFont.
+# built here for this test only; nothing of HarfBuzz's is in GFOpenFont.
 set(OPENFONT_HARFBUZZ_REF "" CACHE PATH "HarfBuzz sources, for compare_harfbuzz")
 if(OPENFONT_HARFBUZZ_REF)
     enable_language(CXX)
@@ -131,5 +131,21 @@ if(OPENFONT_HARFBUZZ_REF)
     if(OPENFONT_TEST_FONT)
         add_test(NAME openfont_compare_harfbuzz COMMAND compare_harfbuzz
                  ${CMAKE_CURRENT_SOURCE_DIR}/tests/shape/latin.txt ${OPENFONT_TEST_FONT} ${OPENFONT_TEST_OTF})
+    endif()
+endif()
+
+# OF_DrawGlyphsA's drawing (src/of_gpu.c) on openamigartg's GFOpenGPU CPU
+# core, against cairo filling the same outlines, given an openamigartg
+# checkout and cairo's headers. Only for testing; the library needs neither.
+set(OPENFONT_OPENAMIGARTG "" CACHE PATH "an openamigartg checkout, for test_gpu")
+if(OPENFONT_OPENAMIGARTG)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(OPENFONT_CAIRO REQUIRED cairo)
+    add_executable(test_gpu tests/test_gpu.c src/of_gpu.c ${OPENFONT_OPENAMIGARTG}/library/opengpu/ogpu_core.c)
+    target_include_directories(test_gpu PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${OPENFONT_OPENAMIGARTG}/include
+                               ${OPENFONT_OPENAMIGARTG}/library/opengpu ${OPENFONT_CAIRO_INCLUDE_DIRS})
+    target_link_libraries(test_gpu PRIVATE openfont ${OPENFONT_CAIRO_LIBRARIES} m)
+    if(OPENFONT_DEJAVU_SANS)
+        add_test(NAME openfont_gpu COMMAND test_gpu ${OPENFONT_DEJAVU_SANS})
     endif()
 endif()

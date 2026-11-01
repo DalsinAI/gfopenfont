@@ -1,4 +1,4 @@
-#include "openfont/openfont.h"
+#include "gfopenfont/gfopenfont.h"
 #include "openfont_internal.h"
 #include "openfont_io.h"
 
@@ -9,7 +9,7 @@
 #include "of_layout.h"
 #include "of_unicode.h"
 
-/* The fonts are read, shaped and drawn by OpenFont's own code: the reader
+/* The fonts are read, shaped and drawn by GFOpenFont's own code: the reader
  * and rasteriser (of_font.c, of_cff.c, of_raster.c) and the shaper
  * (of_shape.c, of_layout.c). */
 

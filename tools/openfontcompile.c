@@ -1,4 +1,4 @@
-#include "openfont/openfont.h"
+#include "gfopenfont/gfopenfont.h"
 #include <stdio.h>
 #include <stdlib.h>
 

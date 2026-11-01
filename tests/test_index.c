@@ -1,6 +1,6 @@
 /* Host test: the font index (finding, aliases, the file, staleness) and
  * fallback by cluster. Copyright (c) 2026 AmigaChrome Team. MIT. */
-#include "openfont/openfont.h"
+#include "gfopenfont/gfopenfont.h"
 #include "openfont_index.h"
 
 #include <stdio.h>

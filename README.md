@@ -1,16 +1,16 @@
-# OpenFont
+# GFOpenFont
 
-OpenFont is the native modern font service for the Open Amiga stack.
+GFOpenFont is the native modern font service for the GFOpenAmiga stack.
 
 It gives Amiga applications one API for font discovery, shaping, measurement,
 glyph rasterisation and compiled glyph caches. The production architecture
 removes direct application dependencies on FreeType, HarfBuzz and fontconfig.
-OpenFont reads, shapes and draws fonts with its own code, written from the
+GFOpenFont reads, shapes and draws fonts with its own code, written from the
 published specifications (the OpenType specification, the Unicode
 Standard).
 
-Current phase: **the resident library, a preview**. `openfont.library` 1.4 is
-OpenFont for AmigaOS 3.2 on the 68040, with its own font reader, rasteriser
+Current phase: **the resident library, a preview**. `gfopenfont.library` 1.5 is
+GFOpenFont for AmigaOS 3.2 on the 68040, with its own font reader, rasteriser
 and shaper inside it. It finds fonts by family through its own font index, and a
 face falls back to others for the characters it has no glyphs for. Its calls
 may still change until version 2. The same core builds on the x86 and ARM64
@@ -21,23 +21,23 @@ a plain loop on this CPU.
 ## Architecture
 
 ```text
-OpenBrowser / OpenWrite / OpenLayout / native applications
+GFOpenBrowser / GFOpenWrite / GFOpenLayout / native applications
                          |
-                     OpenFont
+                     GFOpenFont
        discovery | shaping | metrics | glyph cache
                          |
-                     OpenGfx
+                     GFOpenGfx
                          |
-                     OpenGPU
+                     GFOpenGPU
           68040 | AC090 | x86/ARM64 | GPU
 ```
 
-OpenFont owns text semantics. OpenGfx paints positioned glyph runs. OpenGPU is
+GFOpenFont owns text semantics. GFOpenGfx paints positioned glyph runs. GFOpenGPU is
 only the execution/acceleration layer and does not understand Unicode shaping.
 
 ## The core
 
-`include/openfont/openfont.h` is the core the library is built from, and what
+`include/gfopenfont/gfopenfont.h` is the core the library is built from, and what
 the host tests call:
 
 - faces opened from a file or from memory, one face of a collection, counted
@@ -52,7 +52,7 @@ the host tests call:
 
 ### The reader and the rasteriser
 
-[src/of_font.h](src/of_font.h) is OpenFont's own font reader and outline
+[src/of_font.h](src/of_font.h) is GFOpenFont's own font reader and outline
 rasteriser, written from the OpenType specification and Adobe's CFF and
 Type 2 charstring specifications. No FreeType code is in them, copied or
 translated.
@@ -67,7 +67,7 @@ translated.
   outlines to A8 coverage with the non-zero rule, exact area coverage at 256
   subpixels a pixel, curves cut into lines no more than 1/16 pixel from them.
   No hinting. Integer arithmetic only, the same to the bit on the host and the
-  68040, and a pure function of an outline, so it can move to OpenGPU as it is.
+  68040, and a pure function of an outline, so it can move to GFOpenGPU as it is.
 - **Metrics:** advances and the line metrics in 26.6 at a pixel size, not
   rounded to whole pixels; a glyph's bitmap is its outline's control box
   rounded out.
@@ -101,7 +101,7 @@ Unicode Standard, with no HarfBuzz code:
   ligatures apart;
 - the unsafe-to-break flags.
 
-Since openfont.library 1.3 (23 October 2026) it also takes what WebCore
+Since gfopenfont.library 1.3 (23 October 2026) it also takes what WebCore
 asks for (`of_shape`, `of_shape_utf16`, `OF_ShapeA`):
 
 - UTF-16 text, clusters in 16-bit units;
@@ -180,7 +180,7 @@ ctest --test-dir build --output-on-failure
 
 The reference gate compares the reader and rasteriser with FreeType 2.14.3,
 unhinted, when given a FreeType tree built in its own `build/` folder (only
-for this test; nothing of FreeType's is linked into OpenFont):
+for this test; nothing of FreeType's is linked into GFOpenFont):
 
 ```sh
 cmake -S . -B build -DOPENFONT_FREETYPE_REF=/path/to/freetype-2.14.3
@@ -193,7 +193,7 @@ style names, the bold, italic, fixed-pitch and colour flags, the line metrics
 and every glyph's advance, bitmap size and place; and each pixel within 64 of
 255, the mean difference within 2.5. The pixels differ because the two cut
 curves into lines differently: measured against a near-exact raster (1/256
-pixel), OpenFont is the closer, FreeType's own error reaching 57 in a pixel
+pixel), GFOpenFont is the closer, FreeType's own error reaching 57 in a pixel
 and a mean of 2.6 on CFF fonts at 9 pixels.
 
 On 17 October 2026 it passed on 63 font files of this PC: DejaVu and
@@ -209,11 +209,11 @@ build/compare_harfbuzz TEXTFILE FONT...
 ```
 
 Each line of the text, and some broken UTF-8, at 12, 16 and 33 pixels:
-HarfBuzz (its OpenType functions, OpenFont's advances, script and direction
-guessed) and OpenFont must give the same glyphs, clusters, advances, offsets
+HarfBuzz (its OpenType functions, GFOpenFont's advances, script and direction
+guessed) and GFOpenFont must give the same glyphs, clusters, advances, offsets
 and unsafe-to-break flags. Right-to-left runs are counted apart. One
 difference is allowed: HarfBuzz places a .notdef mark in a font with no GPOS
-by a rule of its own, which OpenFont does not copy.
+by a rule of its own, which GFOpenFont does not copy.
 
 On 17 October 2026 it passed on 58 fonts (DejaVu, Liberation, the URW
 fonts, Noto Sans CJK) with [tests/shape/latin.txt](tests/shape/latin.txt)
@@ -233,16 +233,16 @@ The file format is big-endian. Version 3 (what `openfontcompile` writes now)
 carries a size directory, so a glyph is a couple of loads. Version 1 and 2
 caches still open.
 
-## Fast path: 68k fallback and OpenMulticore
+## Fast path: 68k fallback and GFOpenMulticore
 
 `of_cache_fill_range` fills one `OFRangeSlot` per codepoint. The slot is a
-multiple of 16 bytes, so it is a legal OpenMulticore slice: index `i` writes
+multiple of 16 bytes, so it is a legal GFOpenMulticore slice: index `i` writes
 only `slots[i]`. The worker does not call the OS and does not allocate.
 
 - No `OFExec`, or fewer glyphs than the break-even (8): the worker runs in a
   loop on this CPU. That is the 68k fallback, and it is the reference.
 - An `OFExec` runs the same worker. On Amiga, [src/openfont_omc.c](src/openfont_omc.c)
-  passes it to `OMC_RunRange` (`openmulticore.library` 0.3 or later). A cores
+  passes it to `OMC_RunRange` (`gfopenmulticore.library` 0.3 or later). A cores
   board spreads the indices. No board, an older library, or a refused job falls
   back to the loop. The call does not set `OMCF_BOARD`, so a plain A1200 still
   gets the glyphs.
@@ -258,10 +258,10 @@ the job permissive.
 
 ## 68k build
 
-[amiga/build.sh](amiga/build.sh) builds the range test with OpenAmigaGCC
+[amiga/build.sh](amiga/build.sh) builds the range test with GFOpenAmigaGCC
 **16.2.0-open2**, the compiler in the `os32-gcc16` stove. Nothing in the
-OpenAmigaGCC releases is named 16.2.9-open2. The script looks in
-`~/AmigaChrome/stoves/os32-gcc16`, then `/opt/openamigagcc-16.2.0-open2-x86_64-linux`.
+GFOpenAmigaGCC releases is named 16.2.9-open2. The script looks in
+`~/AmiCradle/stoves/os32-gcc16`, then `/opt/openamigagcc-16.2.0-open2-x86_64-linux`.
 `CC` overrides that. It compiles the sources for the 68040 only: `-m68040`,
 `-O2 -Wall -Wextra -Werror`, soft float through `toolchain/m68k-soft-m68040.specs`
 (libnix's soft maths, not libm881), so it also runs on an LC or EC040.
@@ -276,23 +276,23 @@ Italic and Nimbus Sans (CFF), and `test_reader: ok`.
 directory that contains the NDK and `libraries/openmulticore.h`. The stove has
 those. The compiler release tarball does not, so the script does not invent
 them. With `OMC_INC` set it also builds `openfontomc-68040`. It opens
-`openmulticore.library`, checks the fallbacks, and runs the same eight glyphs
+`gfopenmulticore.library`, checks the fallbacks, and runs the same eight glyphs
 through `OMC_RunRange`.
 
 On lab `openfont` (14 Oct 2026), a 68000 build of that program (before builds
-became 68040 only, 17 Oct 2026), built with OpenAmigaGCC
+became 68040 only, 17 Oct 2026), built with GFOpenAmigaGCC
 16.2.0-open2 printed `OPENFONT_OMC PASS ver=0 rev=4 where=2`. Library 0.4,
 worker on the cores board (`OMCW_BOARD`). A NULL base, a revision-2 library
 and a count below the break-even still match the CPU loop.
 
-## openfont.library
+## gfopenfont.library
 
 The resident library is for AmigaOS 3.2 on a 68040 with its FPU, and only
 that: it does not open on another CPU, or on a 68040 without its FPU (an
 LC040). Later, AC090 leaves may take shaping,
 glyph rasterisation and atlas building, with the same results.
 
-It holds the core, the index, and OpenFont's reader, rasteriser and shaper,
+It holds the core, the index, and GFOpenFont's reader, rasteriser and shaper,
 about 200 KB. Inside it:
 
 - one lock: calls from several tasks are taken one at a time;
@@ -306,20 +306,20 @@ about 200 KB. Inside it:
 ### Fonts
 
 `OF_FindFace` looks in `FONTS:`, `LIBS:WebBrowser/Fonts`, each folder listed
-one a line in `ENVARC:OpenFont/FontDirs`, and folders a program adds. It keeps
-what it found in `ENVARC:OpenFont/FontIndex`.
+one a line in `ENVARC:GFOpenFont/FontDirs`, and folders a program adds. It keeps
+what it found in `ENVARC:GFOpenFont/FontIndex`.
 
-`ENVARC:OpenFont/Aliases` holds the user's aliases, one a line
-(`Name=Family,Family`), before OpenFont's own. `ENVARC:OpenFont/Fallbacks` is
+`ENVARC:GFOpenFont/Aliases` holds the user's aliases, one a line
+(`Name=Family,Family`), before GFOpenFont's own. `ENVARC:GFOpenFont/Fallbacks` is
 the default fallback chain (`DejaVu Sans,Noto Sans,Liberation Sans,DejaVu Sans
 Mono` without it).
 
 ### Using it
 
 ```c
-#include <proto/openfont.h>
+#include <proto/gfopenfont.h>
 
-struct Library *OpenFontBase = OpenLibrary("openfont.library", 1);
+struct Library *OpenFontBase = OpenLibrary("gfopenfont.library", 1);
 struct OFFace *face = OF_FindFace("sans-serif", OFA_Size, 16, TAG_END);
 struct OFGlyph glyphs[64];
 ULONG n = OF_ShapeText(face, text, strlen(text), glyphs, 64);
@@ -331,27 +331,27 @@ CloseLibrary(OpenFontBase);
 
 [sdk](sdk) is what a program needs: the SFD, the C and assembler headers
 (`Include_H`, `Include_I`), the FD file, and the autodoc
-([sdk/Autodocs/openfont.doc](sdk/Autodocs/openfont.doc)). The varargs calls
-`OF_OpenFace` and `OF_FindFace` are in `libopenfont.a`, which the build makes
+([sdk/Autodocs/gfopenfont.doc](sdk/Autodocs/gfopenfont.doc)). The varargs calls
+`OF_OpenFace` and `OF_FindFace` are in `libgfopenfont.a`, which the build makes
 from [sdk/stubs](sdk/stubs). Every call does its work on the library's stack.
 
 Revision 1 (1.1) adds two calls for engines that make their own transforms,
 such as our bullet.library (amigachrome-guest `libraries/openbullet`), which
-draws diskfont.library's outline fonts through OpenFont:
+draws diskfont.library's outline fonts through GFOpenFont:
 `OF_RasterGlyphMatrix` draws a glyph through a 2 x 2 matrix (a size, a
 stretch, a shear, a rotation) and `OF_GlyphAdvance` gives its advance in font
 units. Check `lib_Revision` before calling them.
 
-Revision 2 (1.2) adds `OF_OpenTextFont`: the Open apps' Amiga fonts, so they
+Revision 2 (1.2) adds `OF_OpenTextFont`: the GFOpen apps' Amiga fonts, so they
 never open diskfont.library or bullet.library. It gives the `TextFont` that
 diskfont's `OpenDiskFont` would for the same `TextAttr`: from memory or
 `FONTS:`, matched, scaled, and an outline font (an `.otag` beside its
-`.font`) drawn at the size by OpenFont itself; close it with graphics'
-`CloseFont`. The work is AmigaChrome's OpenDiskFont and OpenBullet cores
+`.font`) drawn at the size by GFOpenFont itself; close it with graphics'
+`CloseFont`. The work is AmiCradle's GFOpenDiskFont and GFOpenBullet cores
 (amigachrome-guest `libraries/opendiskfont` and `libraries/openbullet`),
 copied unchanged into [library/textfont](library/textfont), with their env in
 [library/of_textfont.c](library/of_textfont.c): exec, dos and graphics for
-the first, OpenFont's own functions for the second, inside this library. It
+the first, GFOpenFont's own functions for the second, inside this library. It
 adds 25,580 bytes (1,028,488 to 1,054,068). Check `lib_Revision` against
 `OPENFONT_REVISION_TEXTFONT` (2) before calling it.
 
@@ -360,7 +360,7 @@ Revision 3 (1.3) adds what a layout engine such as WebCore asks:
 `OF_GetFaceMetrics`, `OF_GlyphOutline`, `OF_GlyphExtents`,
 `OF_GetFontTable`, `OF_OpenFaceMemoryA` (web fonts; the face keeps its own
 copy), `OF_FindFaceForCharA` and `OF_GlyphAdvancePx`, at -168 to -210. It is
-also the first library with OpenFont's own shaper on main: HarfBuzz is gone
+also the first library with GFOpenFont's own shaper on main: HarfBuzz is gone
 from it, and it went from 1,054,068 bytes (1.2) to 252,208. Check
 `lib_Revision` against `OPENFONT_REVISION_LAYOUT` (3) before calling them.
 
@@ -379,6 +379,26 @@ with `IoErr()` in `cb_Top`. The library grows by 4,976 bytes (252,368 to
 257,344). Check `lib_Revision` against
 `OPENFONT_REVISION_COLOR` (4) before calling them.
 
+Revision 5 (1.5) draws text through GFOpenGPU: `OF_DrawGlyphsA` (-228) draws a
+run of glyphs (ids and 24.8 pen positions, a pixel size, a premultiplied
+colour and a GFOpenGPU operator) onto a GFOpenGPU surface, inside a clip
+rectangle and optionally an A8 clip mask, and returns when it is drawn. The
+glyph cache is inside the library (`src/of_gpu.c`), shared by every caller:
+each glyph is filled once into an A8 atlas page by GFOpenGPU's `PATH_FILL`
+(per face, size, quarter-pixel x phase and anti-aliasing), then drawn at each
+use as one `COMPOSITE_PD` of the colour through its cell; under a matrix, or
+with `OFGR_NOCACHE`, each outline is filled where it lies. `OFGR_ALIASED`
+needs a back end that says it takes `OGPU_PATH_ALIASED` (gfopengpu.library
+0.24's `OGPU_QUERY_FLAG`). This is the glyph cache WebKit used cairo for: a
+browser drawing through GFOpenGPU needs neither cairo nor a cache of its own.
+`tests/test_gpu.c` draws runs on openamigartg's CPU core against cairo
+filling the same outlines (configure with `-DOPENFONT_OPENAMIGARTG=` an
+openamigartg checkout; it needs cairo's headers). The library opens
+gfopengpu.library 0.18 or later on the first call (`OFERR_NOGPU` without it)
+and is built with its headers from the GFOpen SDK (`OPENGPU_INCLUDE`, by
+default `openamigasdk/Include` beside `NDK`). Check `lib_Revision` against
+`OPENFONT_REVISION_GPU` (5) before calling it.
+
 `OF_FindFaceForCharA` remembers which characters each indexed font has (its
 character map's ranges, read the first time the font is opened), so a
 character no font has, or one only a late font has, no longer opens every
@@ -395,7 +415,7 @@ to 258,896).
 
 ### Building it
 
-[amiga/build-library.sh](amiga/build-library.sh) builds it with OpenAmigaGCC
+[amiga/build-library.sh](amiga/build-library.sh) builds it with GFOpenAmigaGCC
 16.2.0-open2 (the `os32-gcc16` stove's compiler), `-m68040 -m68881`:
 
 ```sh
@@ -405,9 +425,9 @@ NDK=/path/to/OpenNDK/Include_H sh amiga/build-library.sh
 - `CC`: the compiler, when not in the stove or under `/opt`;
 - `NDK`: AmigaOS headers, when the compiler has none of its own.
 
-It builds from OpenFont's own sources alone; nothing upstream is fetched.
+It builds from GFOpenFont's own sources alone; nothing upstream is fetched.
 
-It writes `build/amiga/openfont.library`, its link map, `libopenfont.a` and
+It writes `build/amiga/gfopenfont.library`, its link map, `libgfopenfont.a` and
 `OpenFontLibTest`. It fails when the library leaves a symbol undefined (libnix
 gives it only stateless functions: memory, strings, `qsort`), or
 when its code does not start with `start()`. [build-amiga.sh](build-amiga.sh)
@@ -415,7 +435,7 @@ is the same build for a Cradle stove, which sets `STOVE` and `OUT`.
 
 ### Checking it
 
-Copy `openfont.library` to `LIBS:`, then, from a shell with a 4 KB stack:
+Copy `gfopenfont.library` to `LIBS:`, then, from a shell with a 4 KB stack:
 
 ```text
 OpenFontLibTest FONT/A,FONTDIR/A,CACHE,OUTLINE/K,COLOR/K
@@ -432,7 +452,9 @@ OpenType file) at 29. It ends with `OPENFONTLIB PASS`. Since 1.3 it also checks 
 calls against the host's `OPENFONT LAYOUT` hash (tests/test_openfont.c). Since
 1.4, given `COLOR` (Noto Color Emoji), it decodes U+1F600 through the PNG
 datatype and prints the pixels' hash, which `tests/ref/color_png_hash.py`
-works out on the host for the same font file. On
+works out on the host for the same font file. Since 1.5 it draws two runs
+with `OF_DrawGlyphs` through gfopengpu.library and expects the pixels' hash
+`tests/test_gpu.c` prints on the host (`LAB`). On
 lab t4-a (17 Oct 2026) it stopped before its first line of output; the
 library then had HarfBuzz inside, whose maths went through libnix's libm
 stubs and their unopened math library bases (openamigafont #14). With the
@@ -442,28 +464,28 @@ shaper our own, nothing in the library uses libm.
 
 [fonts/amiga](fonts/amiga) holds DejaVu Sans Mono as Amiga bitmap fonts for
 the Shell: `DejaVuSansMono.font` with sizes 8 to 14, 16, 18, 20, 22 and 24
-pixels high, fixed width, the Latin-1 characters, one bit a pixel. OpenUp
+pixels high, fixed width, the Latin-1 characters, one bit a pixel. GFOpenUp
 installs them in `FONTS:`, and the open ROM carries the 11 as its system
 default text, the Shell's font where no Font prefs name another.
 [tools/amigafont.py](tools/amigafont.py) makes them from the TrueType font,
 in the AmigaOS diskfont format, checks them (`amigafont_check` in the host
 tests), and writes a size as C data for a ROM. It draws the glyphs with FreeType's monochrome hinting through
 Pillow, on the host, once: nothing of FreeType's is in the fonts or in
-OpenFont. [fonts/amiga/README.md](fonts/amiga/README.md) has the sizes, the
+GFOpenFont. [fonts/amiga/README.md](fonts/amiga/README.md) has the sizes, the
 previews and how they were made.
 
 ## Compatibility
 
 FreeType/HarfBuzz compatibility headers will be provided for the subset needed
 by existing ports, but they are compatibility front ends. New Open software
-uses OpenFont directly.
+uses GFOpenFont directly.
 
 MIT licensed AmigaChrome Team code. The Unicode data tables in
 `src/of_unicode_data.c` are generated from the Unicode Character Database and
 are under the Unicode License v3
 ([LICENSES/Unicode-License-v3.txt](LICENSES/Unicode-License-v3.txt)); the
 build copies that licence to `build/amiga/licences`, and it goes wherever the
-library is copied. FreeType and HarfBuzz are no longer in OpenFont; the
+library is copied. FreeType and HarfBuzz are no longer in GFOpenFont; the
 reference tests build against separate trees of theirs. The fonts in
 `fonts/amiga` are DejaVu Sans Mono's, under the Bitstream Vera licence with
 DejaVu's changes in the public domain

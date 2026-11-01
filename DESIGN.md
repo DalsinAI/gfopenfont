@@ -1,45 +1,47 @@
-# OpenFont design
+# GFOpenFont design
 
 Version 0.3 — 17 October 2026 (0.2: the resident library; 0.1, 8 October:
 §1–§5, and the tests)
 
 ## 1. Decision
 
-OpenFont is a first-class Amiga system library. It replaces direct
-application-level use of FreeType, HarfBuzz and fontconfig in the Open stack.
+GFOpenFont is a first-class Amiga system library. It replaces direct
+application-level use of FreeType, HarfBuzz and fontconfig in the GFOpen stack.
 
 The public dependency direction is:
 
 ```text
-application -> openfont.library -> OpenGfx -> OpenGPU
+application -> gfopenfont.library -> GFOpenGfx -> GFOpenGPU
 ```
 
-OpenFont's own code replaces FreeType and HarfBuzz inside it, in stages, each
+GFOpenFont's own code replaces FreeType and HarfBuzz inside it, in stages, each
 from the published specifications only (the OpenType specification, the
 Unicode Standard), never from their code:
 
 1. the font reader and the rasteriser (FreeType out): done, 17 October 2026;
 2. the shaper for Latin (cmap, GPOS pair kerning and `kern`, GSUB ligatures,
    simple mark attachment), HarfBuzz out: done, 17 October 2026 (on main
-   with openfont.library 1.3, 23 October 2026); scripts, languages, right to
+   with gfopenfont.library 1.3, 23 October 2026); scripts, languages, right to
    left, joining and features for WebCore: done, 23 October 2026; colour
    glyphs from CBDT and sbix PNG images, decoded through the PNG datatype
-   (libpng out): openfont.library 1.4, 23 October 2026;
+   (libpng out): gfopenfont.library 1.4, 23 October 2026; glyph runs drawn
+   through GFOpenGPU from a glyph cache in the library (cairo's glyph cache
+   out of WebKit): gfopenfont.library 1.5, 1 November 2026;
 3. the text functions: UTF-8/16, Unicode properties from the UCD, line breaks
    (UAX #14), grapheme and word boundaries (UAX #29), NFC and IDNA, so
-   OpenFont is the one place for them and can later take ICU's place for
+   GFOpenFont is the one place for them and can later take ICU's place for
    WebKit.
 
 Their APIs are not the architecture: the core API stays as it is.
 
 ## 2. Responsibilities
 
-OpenFont owns font discovery and substitution, TTF/OTF and Amiga font
+GFOpenFont owns font discovery and substitution, TTF/OTF and Amiga font
 integration, Unicode fallback, shaping, metrics, variable-font coordinates,
 colour glyph selection, memory caches and persistent compiled caches.
 
-OpenFont does not own drawing state, clipping, layers or compositing. Those
-belong to OpenGfx. It does not own GPU policy. OpenGfx/OpenGPU decide execution.
+GFOpenFont does not own drawing state, clipping, layers or compositing. Those
+belong to GFOpenGfx. It does not own GPU policy. GFOpenGfx/GFOpenGPU decide execution.
 
 ## 3. Compiled font instances
 
@@ -47,7 +49,7 @@ A compiled instance is keyed by face identity, variation coordinates, pixel
 size and raster flags. It can contain character-to-glyph mapping, metrics,
 position-independent glyph metrics and A8/MONO1/RGBA glyph bitmaps.
 
-Common sizes may be precompiled by `OpenFontCompile`. Uncommon sizes are
+Common sizes may be precompiled by `GFOpenFontCompile`. Uncommon sizes are
 created lazily and may be persisted. Cache files are endian-stable and include
 a source checksum so stale font data is never reused.
 
@@ -62,23 +64,23 @@ high-value operations with host leaves while preserving identical results:
 - rasterise colour glyph;
 - build/copy an atlas.
 
-Shaping is not a GPU operation. Positioned glyph runs are handed to OpenGfx,
-which may batch their masks through OpenGPU.
+Shaping is not a GPU operation. Positioned glyph runs are handed to GFOpenGfx,
+which may batch their masks through GFOpenGPU.
 
 ## 5. OS 3.2.3 integration
 
-OpenFont patches **nothing** in AmigaOS.
+GFOpenFont patches **nothing** in AmigaOS.
 
-OpenGfx is the sole owner of the four Open-stack `graphics.library` patches: `Text`, `RectFill`, `BltBitMap` and `ScrollRaster`.
+GFOpenGfx is the sole owner of the four GFOpen-stack `graphics.library` patches: `Text`, `RectFill`, `BltBitMap` and `ScrollRaster`.
 
-When the OpenGfx `Text` patch runs, it calls OpenFont for shaping, metrics and cached MONO1/A8/RGBA glyph data, then OpenGfx performs the actual drawing. OpenFont never installs a `Text`, `TextLength`, `TextExtent` or `TextFit` patch.
+When the GFOpenGfx `Text` patch runs, it calls GFOpenFont for shaping, metrics and cached MONO1/A8/RGBA glyph data, then GFOpenGfx performs the actual drawing. GFOpenFont never installs a `Text`, `TextLength`, `TextExtent` or `TextFit` patch.
 
-Modern applications call OpenFont directly when they need shaped measurement. Classic measurement calls remain OS-owned.
+Modern applications call GFOpenFont directly when they need shaped measurement. Classic measurement calls remain OS-owned.
 
 ## 6. The resident library
 
-`openfont.library` is built for AmigaOS 3.2 on the 68040 with its FPU, with
-OpenAmigaGCC 16.2.0-open2 (`-m68040 -m68881`), and does not open unless exec
+`gfopenfont.library` is built for AmigaOS 3.2 on the 68040 with its FPU, with
+GFOpenAmigaGCC 16.2.0-open2 (`-m68040 -m68881`), and does not open unless exec
 reports both the CPU and its FPU: not on another CPU, nor on an LC040. Version 1 is a
 preview: its calls and structures may change. Version 2 freezes them, once the
 tests in §7 pass on a lab and on real 68040 hardware.
@@ -107,7 +109,7 @@ memory when it opens.
 
 **The font index.** Finding a face by family needs every installed face's
 names, which means opening each font. The index does that once and keeps the
-answer in `ENVARC:OpenFont/FontIndex`, a text file of folders (with their
+answer in `ENVARC:GFOpenFont/FontIndex`, a text file of folders (with their
 dates) and faces (path, face index, family, style, weight, width, slant),
 ending with a count of the faces: a file cut short is not used. When a
 folder's date differs from the index's (a font added or taken away), the
@@ -115,7 +117,7 @@ folders are read again. A folder that could not be listed whole, or a font in
 it that could not be opened just then (being copied in), leaves the index
 stale, so the next look reads the folders again; running out of memory leaves
 it all stale. Finding a face tries the family, then the user's
-aliases (`ENVARC:OpenFont/Aliases`), then OpenFont's own, then `sans-serif`.
+aliases (`ENVARC:GFOpenFont/Aliases`), then GFOpenFont's own, then `sans-serif`.
 Among a family's faces the right slant counts most, then the nearest weight,
 and a wide or narrow face is marked down.
 

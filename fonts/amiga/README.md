@@ -11,7 +11,7 @@ Workbench.
 The 11 is the open ROM's system default text where no Font prefs name one
 (the Team, 24 October 2026: "variable sizing, defaults to 11"): the ROM
 carries it as graphics.library carries topaz, made with `amigafont.py c`
-from the file here. OpenUp installs every size in `FONTS:` (its ShellFont
+from the file here. GFOpenUp installs every size in `FONTS:` (its ShellFont
 part), so Font prefs offers them all.
 
 | Size | Cell (x by y) | Pixels an em | tf_Baseline | Characters in 1920 pixels | File |
@@ -71,7 +71,7 @@ has one width in every glyph of a size: one pixel at 8 to 18, two at 20 to
 24. `--render threshold:N` draws the anti-aliased glyph and keeps the pixels
 of coverage N and more instead; at 12 to 16 pixels that gives stems one and
 two pixels wide side by side and drops thin strokes (`|` at 12), so the
-hinted mode is the default. OpenFont's own rasteriser is not hinted (see the
+hinted mode is the default. GFOpenFont's own rasteriser is not hinted (see the
 README at the top), which is right for its anti-aliased glyphs but not for
 one bit a pixel. At 8 to 10 pixels (7 and 8 an em) the hinting does what it
 can: `m` and `W` are tight, and topaz 8 stays the better 8-pixel font.
@@ -129,8 +129,8 @@ window was 80 columns by 24 rows (488 x 311), Font prefs naming topaz 8 in
 
 The fonts are Font Software under the Bitstream Vera licence, with DejaVu's
 changes in the public domain: [LICENSE-DejaVu.txt](LICENSE-DejaVu.txt). It
-goes wherever the fonts go (OpenUp puts it in
-`SYS:Utilities/OpenUp/Licences`, and amigachrome-guest keeps it beside the
+goes wherever the fonts go (GFOpenUp puts it in
+`SYS:Utilities/GFOpenUp/Licences`, and amigachrome-guest keeps it beside the
 ROM's 11). Their
 name has neither "Bitstream" nor "Vera" in it, as the licence asks of
 modified fonts. The tool is the AmigaChrome Team's, MIT

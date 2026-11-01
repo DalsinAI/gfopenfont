@@ -1,4 +1,4 @@
-/* compare_freetype: OpenFont's own reader and rasteriser against FreeType
+/* compare_freetype: GFOpenFont's own reader and rasteriser against FreeType
  * (unhinted), font by font, for the reference gate of stage 1. Host only;
  * it links a FreeType build the caller gives (FREETYPE_DIR).
  *
@@ -10,7 +10,7 @@
  * Exit 0 when everything is within the tolerances.
  *
  * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE). */
-#include "openfont/openfont.h"
+#include "gfopenfont/gfopenfont.h"
 #include "of_font.h"
 
 #include <ft2build.h>
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
         uint32_t nfaces, fi;
         if (!data) { printf("FAIL %s: can't read\n", argv[a]); fails++; continue; }
         nfaces = of_font_count(data, size);
-        if (!nfaces) { printf("FAIL %s: not a font to OpenFont\n", argv[a]); fails++; continue; }
+        if (!nfaces) { printf("FAIL %s: not a font to GFOpenFont\n", argv[a]); fails++; continue; }
         for (fi = 0; fi < nfaces && fi < 2; ++fi) {
             OFFont f;
             FT_Face ft;

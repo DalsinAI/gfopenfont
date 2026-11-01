@@ -1,7 +1,7 @@
-/* openfont.library: OpenFont's core as an AmigaOS 3.2 library for the
- * 68040. The calls are in sdk/SFD/openfont_lib.sfd, the structures in
- * sdk/Include_H/libraries/openfont.h, and their meaning in
- * sdk/Autodocs/openfont.doc.
+/* gfopenfont.library: GFOpenFont's core as an AmigaOS 3.2 library for the
+ * 68040. The calls are in sdk/SFD/gfopenfont_lib.sfd, the structures in
+ * sdk/Include_H/libraries/gfopenfont.h, and their meaning in
+ * sdk/Autodocs/gfopenfont.doc.
  *
  * How it holds together:
  * - one lock: every call into the core (the reader, the shaper, the index,
@@ -19,7 +19,7 @@
  * Copyright (c) 2026 AmigaChrome Team. OpenFont, MIT licence (LICENSE). */
 /* The first code in the file, ahead of the OS headers: built with
  * -fno-toplevel-reorder, every function is emitted in the order it is
- * defined, and OpenNDK's inline headers define out-of-line varargs helpers
+ * defined, and GFOpenNDK's inline headers define out-of-line varargs helpers
  * (AllocDosObjectTags() and the like). */
 int start(void);
 int start(void)
@@ -50,17 +50,21 @@ int start(void)
 #include <stdlib.h>
 #include <string.h>
 
-#include "openfont/openfont.h"
+#include "gfopenfont/gfopenfont.h"
 #include "openfont_index.h"
 #include "openfont_io.h"
 #include "of_runtime.h"
 #include "of_textfont.h"
+#include "of_gpu.h"
+
+#include <opengpu/opengpu.h>
+#include <proto/opengpu.h>
 
 #define LIB_VERSION 1
-#define LIB_REVISION 4
+#define LIB_REVISION 5
 #define STACK_SIZE (64 * 1024)
 
-/* The same values as the SDK header's (sdk/Include_H/libraries/openfont.h) */
+/* The same values as the SDK header's (sdk/Include_H/libraries/gfopenfont.h) */
 #define OFA_Dummy     (TAG_USER + 0x4F460000)
 #define OFA_Index     (OFA_Dummy + 1)
 #define OFA_Size      (OFA_Dummy + 2)
@@ -77,7 +81,22 @@ int start(void)
 #define OFA_Length    (OFA_Dummy + 13)
 #define OFA_UTF16     (OFA_Dummy + 14)
 #define OFA_Exact     (OFA_Dummy + 15)
+#define OFA_GPUError  (OFA_Dummy + 16)
+#define OFA_GPUStats  (OFA_Dummy + 17)
 #define OFERR_NOTPROCESS -9
+#define OFERR_NOGPU   -10
+#define OFERR_GPU     -11
+typedef char check_gpu_err[OFERR_GPU == OF_ERR_GPU ? 1 : -1];
+
+/* gfopengpu.library 0.24's form of OGPU_Query (stream.h), for SDK headers
+ * from before it: the same values */
+#ifndef OGPU_QUERY_FLAG
+#define OGPU_QUERY_FLAG(op, bit) (0x01000000UL | ((unsigned long)((bit) & 31) << 16) | ((unsigned long)(op) & 0xFFFFUL))
+#endif
+#ifndef OGPU_PATH_ALIASED_BIT
+#define OGPU_PATH_ALIASED_BIT 14
+#endif
+#define OPENGPU_PATHS_REVISION 18       /* gfopengpu.library 0.18: PATH_FILL (stream v1.6) */
 
 /* OF_GlyphColorBitmap's result, as the SDK header's struct OFColorBitmap */
 struct OFColorBitmapArg {
@@ -109,12 +128,16 @@ typedef char check_metrics[sizeof(OFFaceMetrics) == 56 ? 1 : -1];
 typedef char check_extents[sizeof(OFGlyphExtents) == 16 ? 1 : -1];
 typedef char check_outline[sizeof(struct OFOutlineArg) == 24 ? 1 : -1];
 typedef char check_color[sizeof(struct OFColorBitmapArg) == 24 ? 1 : -1];
+/* OF_DrawGlyphsA's: the SDK's struct OFGPUTarget and struct OFGlyphRun */
+typedef char check_gpu_target[sizeof(OFGpuTarget) == 40 ? 1 : -1];
+typedef char check_glyph_run[sizeof(OFGpuRun) == 32 ? 1 : -1];
+typedef char check_gpu_stats[sizeof(OFGpuStats) == 16 ? 1 : -1];
 
-#define INDEX_FILE "ENVARC:OpenFont/FontIndex"
-#define INDEX_DIR "ENVARC:OpenFont"
-#define DIRS_FILE "ENVARC:OpenFont/FontDirs"
-#define ALIASES_FILE "ENVARC:OpenFont/Aliases"
-#define FALLBACKS_FILE "ENVARC:OpenFont/Fallbacks"
+#define INDEX_FILE "ENVARC:GFOpenFont/FontIndex"
+#define INDEX_DIR "ENVARC:GFOpenFont"
+#define DIRS_FILE "ENVARC:GFOpenFont/FontDirs"
+#define ALIASES_FILE "ENVARC:GFOpenFont/Aliases"
+#define FALLBACKS_FILE "ENVARC:GFOpenFont/Fallbacks"
 
 struct OpenFontBase {
     struct Library lib;
@@ -132,16 +155,19 @@ struct OpenFontBase {
     ULONG check_time;               /* in ticks */
     struct OFTextFonts fonts;       /* the Amiga fonts OF_OpenTextFont loaded */
     int datatypes_tried;            /* OF_GlyphColorBitmap opened datatypes.library, or failed to */
+    int gpu_tried;                  /* OF_DrawGlyphsA opened gfopengpu.library, or failed to */
+    OFGpu *gpu;                     /* its drawer and glyph cache */
 };
 
 struct ExecBase *SysBase;
 struct DosLibrary *DOSBase;
 struct Library *UtilityBase;       /* as proto/utility.h declares it */
 struct Library *DataTypesBase;     /* opened by the first OF_GlyphColorBitmap */
+struct Library *OpenGPUBase;       /* opened by the first OF_DrawGlyphsA */
 
-static const char lib_name[] = "openfont.library";
-static const char lib_id[] = "openfont.library 1.4 (23.10.2026) OpenFont 0.6, AmigaChrome Team\r\n";
-static const char ver_tag[] __attribute__((used)) = "$VER: openfont.library 1.4 (23.10.2026) OpenFont 0.6, AmigaChrome Team";
+static const char lib_name[] = "gfopenfont.library";
+static const char lib_id[] = "gfopenfont.library 1.5 (1.11.2026) GFOpenFont 0.6, AmiCradle Team\r\n";
+static const char ver_tag[] __attribute__((used)) = "$VER: gfopenfont.library 1.5 (1.11.2026) GFOpenFont 0.6, AmiCradle Team";
 
 #define REG(r, decl) register decl __asm(#r)
 #define BASE REG(a6, struct OpenFontBase *b)
@@ -922,6 +948,10 @@ static CONST_STRPTR L_ErrorString(REG(d0, LONG code), BASE)
     (void)b;
     if (code == OFERR_NOTPROCESS)
         return (CONST_STRPTR)"the caller is not a process";
+    if (code == OFERR_NOGPU)
+        return (CONST_STRPTR)"no gfopengpu.library that fills paths";
+    if (code == OFERR_GPU)
+        return (CONST_STRPTR)"GFOpenGPU failed to draw";
     return (CONST_STRPTR)of_error_string((int)code);
 }
 
@@ -1200,6 +1230,100 @@ static VOID L_FreeColorBitmap(REG(a0, struct OFColorBitmapArg *bitmap), BASE)
     memset(bitmap, 0, sizeof *bitmap);
 }
 
+/* ---- glyph runs through GFOpenGPU (revision 5) ---- */
+
+/* The drawer's memory: the back ends read the Amiga's own memory, at its
+ * own addresses (the CPU back end, and ACRTG.gpu through the Cradle). */
+static void *gpu_alloc(void *user, size_t bytes, uint32_t *address)
+{
+    void *p = AllocVec((ULONG)bytes, MEMF_ANY);
+    (void)user;
+    if (p)
+        *address = (uint32_t)p;
+    return p;
+}
+
+static void gpu_free(void *user, void *block)
+{
+    (void)user;
+    FreeVec(block);
+}
+
+static long gpu_submit(void *user, const uint8_t *stream, long words)
+{
+    ULONG fence = 0;
+    LONG r, w;
+    (void)user;
+    r = OGPU_Submit((APTR)stream, (ULONG)words, &fence);
+    w = fence ? OGPU_Wait(fence) : OGPU_OK;
+    return r != OGPU_OK ? r : w;
+}
+
+struct GpuArgs {
+    OFFace *face;
+    const OFGpuTarget *target;
+    const OFGpuRun *run;
+    LONG gpu_error;
+    OFGpuStats stats;
+};
+
+static long w_draw_glyphs(void *base, void *arg)
+{
+    struct OpenFontBase *b = (struct OpenFontBase *)base;
+    struct GpuArgs *a = (struct GpuArgs *)arg;
+    long r;
+    if (!b->gpu_tried) {
+        b->gpu_tried = 1;
+        OpenGPUBase = OpenLibrary((CONST_STRPTR)OPENGPU_NAME, OPENGPU_VERSION);
+        if (OpenGPUBase && OpenGPUBase->lib_Version == 0 && OpenGPUBase->lib_Revision < OPENGPU_PATHS_REVISION) {
+            CloseLibrary(OpenGPUBase);
+            OpenGPUBase = NULL;
+        }
+        if (OpenGPUBase) {
+            /* OGPU_PATH_ALIASED only where the back end says it takes it:
+             * before gfopengpu.library 0.24 the answer is OGPU_NONE */
+            int aliased = OGPU_ANSWER(OGPU_Query(OGPU_QUERY_FLAG(OGPU_OP_PATH_FILL, OGPU_PATH_ALIASED_BIT),
+                                                 OGPU_FMT_A8)) != OGPU_NONE;
+            b->gpu = of_gpu_create(gpu_alloc, gpu_free, gpu_submit, NULL, aliased);
+        }
+    }
+    if (!OpenGPUBase)
+        return OFERR_NOGPU;
+    if (!b->gpu)
+        return OF_ERR_MEMORY;
+    if (OGPU_ANSWER(OGPU_Query(OGPU_OP_PATH_FILL, OGPU_FMT_A8)) == OGPU_NONE
+        || OGPU_ANSWER(OGPU_Query(OGPU_OP_COMPOSITE_PD, a->target->format)) == OGPU_NONE)
+        return OFERR_NOGPU;
+    r = of_gpu_draw(b->gpu, a->face, a->target, a->run);
+    a->gpu_error = of_gpu_error(b->gpu);
+    of_gpu_stats(b->gpu, &a->stats);
+    return r;
+}
+
+static LONG L_DrawGlyphsA(REG(a0, OFFace *face), REG(a1, const OFGpuTarget *target), REG(a2, const OFGpuRun *glyphs),
+                          REG(a3, const struct TagItem *tags), BASE)
+{
+    struct GpuArgs a;
+    LONG rc, *perr;
+    OFGpuStats *pstats;
+    if (!face || !target || !glyphs)
+        rc = OF_ERR_ARGUMENT;
+    else {
+        memset(&a, 0, sizeof a);
+        a.face = face;
+        a.target = target;
+        a.run = glyphs;
+        rc = run(b, w_draw_glyphs, &a);
+        if ((perr = (LONG *)GetTagData(OFA_GPUError, 0, tags)) != NULL)
+            *perr = a.gpu_error;
+        if ((pstats = (OFGpuStats *)GetTagData(OFA_GPUStats, 0, tags)) != NULL)
+            *pstats = a.stats;
+    }
+    if (rc < 0)
+        set_error(tags, rc);
+    return rc;
+}
+
 /* ---- the library itself ---- */
 
 static struct Library *lib_init(REG(d0, struct OpenFontBase *b), REG(a0, BPTR seglist), REG(a6, struct ExecBase *sys));
@@ -1243,6 +1367,7 @@ static const APTR lib_vectors[] = {
     (APTR)L_GlyphAdvancePx,     /* -210, revision 3 */
     (APTR)L_GlyphColorBitmap,   /* -216, revision 4 */
     (APTR)L_FreeColorBitmap,    /* -222, revision 4 */
+    (APTR)L_DrawGlyphsA,        /* -228, revision 5 */
     (APTR)-1
 };
 
@@ -1266,6 +1391,13 @@ const struct Resident lib_romtag __attribute__((used)) = {
  * and none of their code runs here. */
 static void lib_free(struct OpenFontBase *b)
 {
+    /* the glyph cache first: its pages are AllocVec'd, its own blocks in the pool */
+    of_gpu_destroy(b->gpu);
+    b->gpu = NULL;
+    if (OpenGPUBase)
+        CloseLibrary(OpenGPUBase);
+    OpenGPUBase = NULL;
+    b->gpu_tried = 0;
     b->ctx = NULL;
     memset(&b->index, 0, sizeof b->index);
     of_runtime_exit();

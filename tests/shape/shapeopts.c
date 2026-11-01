@@ -1,4 +1,4 @@
-/* shapeopts: each line of a text file shaped by OpenFont with a direction,
+/* shapeopts: each line of a text file shaped by GFOpenFont with a direction,
  * a script, a language and features, glyph by glyph, for comparing with
  * another shaper (tests/ref/compare_uharfbuzz.py).
  *
@@ -14,7 +14,7 @@
  * 26.6 pixels.
  *
  * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE). */
-#include "openfont/openfont.h"
+#include "gfopenfont/gfopenfont.h"
 
 #include <stdio.h>
 #include <stdlib.h>

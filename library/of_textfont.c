@@ -1,15 +1,15 @@
-/* openfont.library's Amiga fonts: OF_OpenTextFont gives a program the
+/* gfopenfont.library's Amiga fonts: OF_OpenTextFont gives a program the
  * TextFont that diskfont.library's OpenDiskFont would, without
  * diskfont.library or bullet.library. A bitmap font is read from FONTS:,
- * matched and scaled by OpenDiskFont's core; an outline font (an .otag
- * beside its .font) is drawn by OpenFont, through OpenBullet's core: the
+ * matched and scaled by GFOpenDiskFont's core; an outline font (an .otag
+ * beside its .font) is drawn by GFOpenFont, through GFOpenBullet's core: the
  * .otag's tags, the size, DPI, shear and emboldening, glyph maps from
- * OpenFont's coverage.
+ * GFOpenFont's coverage.
  *
- * The two cores are AmigaChrome's (amigachrome-guest libraries/opendiskfont
+ * The two cores are AmiCradle's (amigachrome-guest libraries/opendiskfont
  * and libraries/openbullet), copied into textfont/ unchanged: lean C++,
  * integer only, everything they need through their env. Here the env is
- * exec, dos and graphics for diskfont's, and OpenFont's own functions for
+ * exec, dos and graphics for diskfont's, and GFOpenFont's own functions for
  * bullet's, called in this library, under its lock, on its stack. The
  * engine diskfont's core opens by name, "bullet.library", is that core:
  * nothing is opened. Any other engine an .otag names is opened as
@@ -231,7 +231,7 @@ static odf_u32 e_weigh(struct odf_ctx *c, const struct odf_TTextAttr *req, const
     return w > 0 ? (odf_u32)w : 0;
 }
 
-/* ---- bullet's env: OpenFont, in this library ----------------------------- */
+/* ---- bullet's env: GFOpenFont, in this library ----------------------------- */
 
 static void *b_alloc(void *user, obl_u32 size)
 {
@@ -313,7 +313,7 @@ static size_t utf8(char *o, obl_u32 c)
 }
 
 /* The pair shaped at one pixel to the font unit: the first glyph's shaped
- * advance less its own is the kerning, in font units (as OpenBullet). */
+ * advance less its own is the kerning, in font units (as GFOpenBullet). */
 static obl_s32 b_kern(void *user, void *face, obl_u32 left, obl_u32 right)
 {
     OFFace *f = (OFFace *)face;
@@ -339,7 +339,7 @@ static const struct obl_env bullet_env = {
 
 /* ---- diskfont's env: the outline engine ---------------------------------- */
 
-/* "bullet.library" is OpenBullet's core, here: this token stands for it */
+/* "bullet.library" is GFOpenBullet's core, here: this token stands for it */
 static const char bullet_token = 0;
 #define IS_BULLET(lib) ((const void *)(lib) == (const void *)&bullet_token)
 

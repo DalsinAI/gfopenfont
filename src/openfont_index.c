@@ -1,7 +1,7 @@
-/* OpenFont's font index: see openfont_index.h.
+/* GFOpenFont's font index: see openfont_index.h.
  *
  * Written for the library as much as for the host: no stdio, no sprintf,
- * no locale. Memory comes from malloc, which openfont.library supplies.
+ * no locale. Memory comes from malloc, which gfopenfont.library supplies.
  *
  * Copyright (c) 2026 AmigaChrome Team. OpenFont, MIT licence (LICENSE). */
 #include "openfont_index.h"
@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* OpenFont's own aliases, after the user's. Liberation's families keep the
+/* GFOpenFont's own aliases, after the user's. Liberation's families keep the
  * metrics of the fonts they stand in for. */
 static const char *const builtin_aliases[] = {
     "sans-serif=DejaVu Sans,Liberation Sans,Noto Sans",

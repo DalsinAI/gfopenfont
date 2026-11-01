@@ -1,4 +1,4 @@
-/* test_shape: OpenFont's Unicode properties and its shaper.
+/* test_shape: GFOpenFont's Unicode properties and its shaper.
  *
  *   test_shape                 the Unicode properties
  *   test_shape FONT [TEXT]     and, when FONT is DejaVu Sans (DejaVuSans.ttf),
@@ -14,7 +14,7 @@
  * shaper is integers only, so the host and the 68040 must print the same.
  *
  * Copyright (c) 2026 AmigaChrome Team. MIT licence (see LICENSE). */
-#include "openfont/openfont.h"
+#include "gfopenfont/gfopenfont.h"
 #include "of_font.h"
 #include "of_layout.h"
 #include "of_unicode.h"

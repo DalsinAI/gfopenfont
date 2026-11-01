@@ -1,6 +1,6 @@
 #!/bin/sh
 # Copyright (c) 2026 AmigaChrome Team. OpenFont, MIT licence (LICENSE).
-# The 68k range test, built with OpenAmigaGCC 16.2.0-open2.
+# The 68k range test, built with GFOpenAmigaGCC 16.2.0-open2.
 # That is the compiler in the os32-gcc16 stove. There is no 16.2.9-open2.
 #
 #   amiga/build.sh [OUT_DIR]
@@ -14,10 +14,10 @@ ROOT=$(cd "$HERE/.." && pwd)
 # mathieee libraries), not libm881, so one build runs on every 68040.
 SPECS="-specs=$ROOT/toolchain/m68k-soft-m68040.specs"
 if [ -z "${CC:-}" ]; then
-    if [ -x "$HOME/AmigaChrome/stoves/os32-gcc16/bin/m68k-amigaos-gcc" ]; then
-        CC=$HOME/AmigaChrome/stoves/os32-gcc16/bin/m68k-amigaos-gcc
-    elif [ -x "$HOME/AmigaChrome/stoves/os32-gcc16/prefix/bin/m68k-amigaos-gcc" ]; then
-        CC=$HOME/AmigaChrome/stoves/os32-gcc16/prefix/bin/m68k-amigaos-gcc
+    if [ -x "$HOME/AmiCradle/stoves/os32-gcc16/bin/m68k-amigaos-gcc" ]; then
+        CC=$HOME/AmiCradle/stoves/os32-gcc16/bin/m68k-amigaos-gcc
+    elif [ -x "$HOME/AmiCradle/stoves/os32-gcc16/prefix/bin/m68k-amigaos-gcc" ]; then
+        CC=$HOME/AmiCradle/stoves/os32-gcc16/prefix/bin/m68k-amigaos-gcc
     elif [ -x /opt/openamigagcc-16.2.0-open2-x86_64-linux/bin/m68k-amigaos-gcc ]; then
         CC=/opt/openamigagcc-16.2.0-open2-x86_64-linux/bin/m68k-amigaos-gcc
     else
@@ -36,7 +36,7 @@ for cpu in 68040; do
     echo "$OUT/openfontrange-$cpu ($(wc -c < "$OUT/openfontrange-$cpu") bytes)"
 done
 
-# OpenFont's own reader, rasteriser and shaper, and their tests: the same
+# GFOpenFont's own reader, rasteriser and shaper, and their tests: the same
 # fingerprints as on the host, the same bitmaps and glyphs to the bit.
 for cpu in 68040; do
     "$CC" -m"$cpu" $SPECS -O2 -Wall -Wextra -Werror \
@@ -53,7 +53,7 @@ for cpu in 68040; do
     echo "$OUT/openfontshape-$cpu ($(wc -c < "$OUT/openfontshape-$cpu") bytes)"
 done
 
-# The OpenMulticore path needs the NDK and openamigamulticore/include.
+# The GFOpenMulticore path needs the NDK and openamigamulticore/include.
 # OMC_INC is that include directory. Without it, only the range test is built.
 # Builds are for the 68040 only (the target, 68040 + FPU).
 if [ -n "${OMC_INC:-}" ]; then
