@@ -12,9 +12,10 @@
 #              its own: OpenNDK's Include_H (openamigasdk/OpenNDK/Include_H)
 #   OPENGPU_INCLUDE  opengpu.library's headers (opengpu/stream.h,
 #              proto/opengpu.h), for OF_DrawGlyphsA: the Open SDK's Include
-#              (default: next to NDK, openamigasdk/Include, then
-#              ../openamigasdk/Include beside this checkout, then the
-#              compiler's own, as the os32-gcc16 stove carries them)
+#              (default: next to NDK, openamigasdk/Include; then beside
+#              this checkout, openamigasdk/Include or openamigartg/include,
+#              as Cradle's checkouts too; then the compiler's own, when
+#              they are stream v1.6 or later)
 #
 # It builds in OUT_DIR/work.
 set -eu
@@ -42,18 +43,28 @@ NM=$(dirname "$CC")/m68k-amigaos-nm
 
 NDKFLAGS=
 [ -n "${NDK:-}" ] && NDKFLAGS="-I$NDK"
-if [ -z "${OPENGPU_INCLUDE:-}" ]; then
-    for d in ${NDK:+"$NDK/../../Include"} "$ROOT/../openamigasdk/Include"; do
-        if [ -f "$d/opengpu/stream.h" ] && [ -f "$d/proto/opengpu.h" ]; then OPENGPU_INCLUDE=$(cd "$d" && pwd); break; fi
+# OpenGPU's headers from stream v1.6 on (PATH_FILL, COMPOSITE_PD): the first
+# folder that has them, then the compiler's own if they are that new
+gpu_ok() { [ -f "$1/opengpu/stream.h" ] && [ -f "$1/proto/opengpu.h" ] && grep -q OGPU_OP_PATH_FILL "$1/opengpu/stream.h"; }
+if [ -n "${OPENGPU_INCLUDE:-}" ]; then
+    gpu_ok "$OPENGPU_INCLUDE" || { echo "OPENGPU_INCLUDE=$OPENGPU_INCLUDE has no OpenGPU headers of stream v1.6 or later" >&2; exit 1; }
+else
+    for d in ${NDK:+"$NDK/../../Include"} "$ROOT/../openamigasdk/Include" "$ROOT/../openamigartg/include" \
+             "$ROOT/../DalsinAI__openamigasdk/Include" "$ROOT/../DalsinAI__openamigartg/include"; do
+        if gpu_ok "$d"; then OPENGPU_INCLUDE=$(cd "$d" && pwd); break; fi
     done
 fi
-if [ -n "${OPENGPU_INCLUDE:-}" ] && [ -f "$OPENGPU_INCLUDE/opengpu/stream.h" ]; then
-    # after the NDK's, so its exec and proto headers come first
-    NDKFLAGS="$NDKFLAGS -idirafter $OPENGPU_INCLUDE"
-elif printf '#include <opengpu/stream.h>\n#include <proto/opengpu.h>\n' | "$CC" $NDKFLAGS -E -x c - >/dev/null 2>&1; then
-    echo "opengpu.library's headers: the compiler's own (a stove's)"
+if [ -n "${OPENGPU_INCLUDE:-}" ]; then
+    echo "opengpu.library's headers: $OPENGPU_INCLUDE"
+    # after the NDK's, so its exec and proto headers come first, but ahead
+    # of the compiler's own (a stove's opengpu/ may be older)
+    NDKFLAGS="$NDKFLAGS -I$OPENGPU_INCLUDE"
+elif printf '#include <opengpu/stream.h>\n#ifndef OGPU_OP_PATH_FILL\n#error old\n#endif\n#include <proto/opengpu.h>\n' \
+        | "$CC" $NDKFLAGS -E -x c - >/dev/null 2>&1; then
+    echo "opengpu.library's headers: the compiler's own"
 else
-    echo "opengpu.library's headers not found: set OPENGPU_INCLUDE to the Open SDK's Include" >&2
+    echo "OpenGPU headers of stream v1.6 or later not found: set OPENGPU_INCLUDE to the Open SDK's Include" >&2
+    echo "(or openamigartg's include)" >&2
     exit 1
 fi
 
