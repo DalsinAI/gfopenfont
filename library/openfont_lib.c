@@ -57,8 +57,8 @@ int start(void)
 #include "of_textfont.h"
 #include "of_gpu.h"
 
-#include <opengpu/opengpu.h>
-#include <proto/opengpu.h>
+#include <gfopengpu/gfopengpu.h>
+#include <proto/gfopengpu.h>
 
 #define LIB_VERSION 1
 #define LIB_REVISION 5

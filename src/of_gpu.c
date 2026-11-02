@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <opengpu/stream.h>
+#include <gfopengpu/stream.h>
 
 /* stream v1.8's flag (gfopengpu.library 0.23), for headers from before it */
 #ifndef OGPU_PATH_ALIASED

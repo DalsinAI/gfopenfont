@@ -36,7 +36,7 @@
 #include <graphics/text.h>
 #include <libraries/gfopenfont.h>
 #include <proto/gfopenfont.h>
-#include <opengpu/stream.h>
+#include <gfopengpu/stream.h>
 
 #include <stdio.h>
 #include <string.h>
