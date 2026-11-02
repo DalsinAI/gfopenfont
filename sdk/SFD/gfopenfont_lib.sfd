@@ -2,7 +2,7 @@
 * gfopenfont.library's calls: fonts, shaping, glyphs and the font index.
 * Copyright (c) 2026 AmiCradle Team. OpenFont, MIT licence (LICENSE).
 * Version 1 is a preview: its calls may still change. They are frozen from
-* version 2, once the design's tests pass (amigachrome
+* version 2, once the design's tests pass (amicradle
 * docs/design/native-stack/Design-GFOpenFont.md, sections 4 and 12).
 ==base _OpenFontBase
 ==basetype struct Library *

@@ -569,12 +569,12 @@ def c_header(path: Path, size: int, prefix: str, out: Path) -> int:
     a = AmigaFont(raw, str(src))
     P = prefix.upper()
     lines = [
-        f"/* {path.name} {size} as constant data, made by openamigafont's tools/amigafont.py:",
+        f"/* {path.name} {size} as constant data, made by gfopenfont's tools/amigafont.py:",
         f" *   amigafont.py c fonts/amiga/{path.name} {size} OUT --prefix {prefix}",
         f" * from fonts/amiga/{entries[size]} (sha256 {hashlib.sha256(raw).hexdigest()}).",
         f" * The font is DejaVu Sans Mono, Font Software under the Bitstream Vera licence with",
         f" * DejaVu's changes in the public domain: its notice goes with every copy",
-        f" * (openamigafont's fonts/amiga/LICENSE-DejaVu.txt). */",
+        f" * (gfopenfont's fonts/amiga/LICENSE-DejaVu.txt). */",
         f"#define {P}_NAME \"{a.name}\"",
         f"#define {P}_YSIZE {a.ysize}",
         f"#define {P}_XSIZE {a.xsize}",

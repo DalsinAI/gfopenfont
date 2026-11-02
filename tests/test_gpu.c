@@ -1,6 +1,6 @@
 /*
  * Glyph runs drawn through GFOpenGPU (src/of_gpu.c, what gfopenfont.library's
- * OF_DrawGlyphsA does) on openamigartg's CPU core, against cairo:
+ * OF_DrawGlyphsA does) on gfopenrtg's CPU core, against cairo:
  *  - cairo filling the same outlines at the same (quarter-pixel) positions:
  *    away from the glyphs' edges the pixels must be the same, at the edges
  *    (where the two rasterisers each anti-alias) within a bound;
@@ -12,7 +12,7 @@
  *    XRGB32 target;
  *  - the cache's counts: a run drawn again is all hits; enough sizes empty
  *    the atlas, and what is drawn after is still right.
- *   test_gpu FONT.ttf        (needs cairo, and openamigartg's include and
+ *   test_gpu FONT.ttf        (needs cairo, and gfopenrtg's include and
  *                             library/opengpu/ogpu_core.c)
  * MIT, Copyright (c) 2026 AmiCradle Team.
  * SPDX-License-Identifier: MIT

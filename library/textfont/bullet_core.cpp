@@ -16,7 +16,7 @@
  * GFOpenFont, is OTERR_BadFace, so diskfont.library falls back to the font's
  * bitmap sizes (README.md, "Font formats").
  *
- * Built with openamigagcc's lean C++ library profile:
+ * Built with gfopengcc's lean C++ library profile:
  *   -std=gnu++23 -fno-exceptions -fno-rtti -fno-threadsafe-statics
  *   -fno-asynchronous-unwind-tables -fno-unwind-tables -nostdlib++
  * No static constructors, no function-local statics, no standard header

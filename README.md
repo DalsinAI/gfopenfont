@@ -336,7 +336,7 @@ CloseLibrary(OpenFontBase);
 from [sdk/stubs](sdk/stubs). Every call does its work on the library's stack.
 
 Revision 1 (1.1) adds two calls for engines that make their own transforms,
-such as our bullet.library (amigachrome-guest `libraries/openbullet`), which
+such as our bullet.library (amicradle-guest `libraries/openbullet`), which
 draws diskfont.library's outline fonts through GFOpenFont:
 `OF_RasterGlyphMatrix` draws a glyph through a 2 x 2 matrix (a size, a
 stretch, a shear, a rotation) and `OF_GlyphAdvance` gives its advance in font
@@ -348,7 +348,7 @@ diskfont's `OpenDiskFont` would for the same `TextAttr`: from memory or
 `FONTS:`, matched, scaled, and an outline font (an `.otag` beside its
 `.font`) drawn at the size by GFOpenFont itself; close it with graphics'
 `CloseFont`. The work is AmiCradle's GFOpenDiskFont and GFOpenBullet cores
-(amigachrome-guest `libraries/opendiskfont` and `libraries/openbullet`),
+(amicradle-guest `libraries/opendiskfont` and `libraries/openbullet`),
 copied unchanged into [library/textfont](library/textfont), with their env in
 [library/of_textfont.c](library/of_textfont.c): exec, dos and graphics for
 the first, GFOpenFont's own functions for the second, inside this library. It
@@ -391,12 +391,12 @@ with `OFGR_NOCACHE`, each outline is filled where it lies. `OFGR_ALIASED`
 needs a back end that says it takes `OGPU_PATH_ALIASED` (gfopengpu.library
 0.24's `OGPU_QUERY_FLAG`). This is the glyph cache WebKit used cairo for: a
 browser drawing through GFOpenGPU needs neither cairo nor a cache of its own.
-`tests/test_gpu.c` draws runs on openamigartg's CPU core against cairo
+`tests/test_gpu.c` draws runs on gfopenrtg's CPU core against cairo
 filling the same outlines (configure with `-DOPENFONT_OPENAMIGARTG=` an
-openamigartg checkout; it needs cairo's headers). The library opens
+gfopenrtg checkout; it needs cairo's headers). The library opens
 gfopengpu.library 0.18 or later on the first call (`OFERR_NOGPU` without it)
 and is built with its headers from the GFOpen SDK (`OPENGPU_INCLUDE`, by
-default `openamigasdk/Include` beside `NDK`). Check `lib_Revision` against
+default `gfopensdk/Include` beside `NDK`). Check `lib_Revision` against
 `OPENFONT_REVISION_GPU` (5) before calling it.
 
 `OF_FindFaceForCharA` remembers which characters each indexed font has (its
@@ -457,7 +457,7 @@ with `OF_DrawGlyphs` through gfopengpu.library and expects the pixels' hash
 `tests/test_gpu.c` prints on the host (`LAB`). On
 lab t4-a (17 Oct 2026) it stopped before its first line of output; the
 library then had HarfBuzz inside, whose maths went through libnix's libm
-stubs and their unopened math library bases (openamigafont #14). With the
+stubs and their unopened math library bases (gfopenfont #14). With the
 shaper our own, nothing in the library uses libm.
 
 ## Amiga bitmap fonts

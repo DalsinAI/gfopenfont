@@ -119,7 +119,7 @@ Shell window had 154 columns and 32 rows of 8 x 16 cells (topaz 8: 154 and
 64); with the 12, 205 and 42. Making the window narrower brought `Dir`'s
 columns and the long lines of `List` in to the new width.
 
-With the 11 in the ROM (amigachrome-guest, built into a lab ROM the same
+With the 11 in the ROM (amicradle-guest, built into a lab ROM the same
 day) and no Font prefs, the system default text was DejaVuSansMono.font 11:
 the same window had 205 columns and 46 rows of 6 x 11 cells, NewShell's own
 window was 80 columns by 24 rows (488 x 311), Font prefs naming topaz 8 in
@@ -130,7 +130,7 @@ window was 80 columns by 24 rows (488 x 311), Font prefs naming topaz 8 in
 The fonts are Font Software under the Bitstream Vera licence, with DejaVu's
 changes in the public domain: [LICENSE-DejaVu.txt](LICENSE-DejaVu.txt). It
 goes wherever the fonts go (GFOpenUp puts it in
-`SYS:Utilities/GFOpenUp/Licences`, and amigachrome-guest keeps it beside the
+`SYS:Utilities/GFOpenUp/Licences`, and amicradle-guest keeps it beside the
 ROM's 11). Their
 name has neither "Bitstream" nor "Vera" in it, as the licence asks of
 modified fonts. The tool is the AmiCradle Team's, MIT

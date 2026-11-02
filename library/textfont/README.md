@@ -1,6 +1,6 @@
 # OF_OpenTextFont's cores
 
-Copied unchanged from amigachrome-guest; change them there first, then copy
+Copied unchanged from amicradle-guest; change them there first, then copy
 them here again:
 
 | File | From |

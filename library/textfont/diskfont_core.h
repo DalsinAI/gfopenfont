@@ -7,7 +7,7 @@
  * the autodocs leave a corner open, diskfont_core.cpp says "ABI test":
  * tests/DiskFontABITest settles it against OS 3.2.
  *
- * The core is lean C++ (openamigagcc docs/lean-cxx.md, library profile);
+ * The core is lean C++ (gfopengcc docs/lean-cxx.md, library profile);
  * this header is plain C so the C library shell (opendiskfont_lib.c) and
  * the C tests use it as is. Everything the core needs from exec, dos and
  * graphics comes in through struct odf_env, so tests/m68k drives it under
