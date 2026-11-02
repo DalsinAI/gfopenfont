@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: DalsinAI/gfopenrtg
-          ref: e8924a099a52e2772ef23074cbf96948e19e11b1   # main: GFOpenGPU 0.24, stream v1.8 (#161)
+          ref: a14091d9b7e286f93aa335861934c574c3a6b29c   # main after the GFOpenGPU header rename
           path: gfopenrtg
       - name: Dependencies
         run: sudo apt-get update && sudo apt-get install -y cmake fonts-dejavu-core fonts-liberation2 fonts-noto-color-emoji libcairo2-dev
