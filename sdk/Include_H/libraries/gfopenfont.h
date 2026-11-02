@@ -174,7 +174,7 @@ struct OFColorBitmap {
 
 /* A run of glyphs drawn through GFOpenGPU, for OF_DrawGlyphsA (revision 5).
  * Where: a GFOpenGPU surface (gt_Format: OGPU_FMT_ARGB32, XRGB32, RGB565 and
- * the other colour formats of <opengpu/stream.h>) at gt_Address, in memory
+ * the other colour formats of <gfopengpu/stream.h>) at gt_Address, in memory
  * the back end reaches (the Amiga's own). Drawing stays inside the clip
  * rectangle and the surface; with gt_MaskAddress, also inside the A8 mask
  * covering gt_MaskX, gt_MaskY, gt_MaskW x gt_MaskH of the surface, whose

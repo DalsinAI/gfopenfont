@@ -25,7 +25,7 @@
 
 #include "of_gpu.h"
 #include "ogpu_core.h"
-#include <opengpu/stream.h>
+#include <gfopengpu/stream.h>
 
 #define ARENA       (1L << 23)
 #define W           200

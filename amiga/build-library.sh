@@ -10,8 +10,8 @@
 #              release unpacked under /opt)
 #   NDK        a folder of AmigaOS headers, when the compiler has none of
 #              its own: GFOpenNDK's Include_H (gfopensdk/OpenNDK/Include_H)
-#   OPENGPU_INCLUDE  gfopengpu.library's headers (opengpu/stream.h,
-#              proto/opengpu.h), for OF_DrawGlyphsA: the GFOpen SDK's Include
+#   OPENGPU_INCLUDE  gfopengpu.library's headers (gfopengpu/stream.h,
+#              proto/gfopengpu.h), for OF_DrawGlyphsA: the GFOpen SDK's Include
 #              (default: next to NDK, gfopensdk/Include; then beside
 #              this checkout, gfopensdk/Include or gfopenrtg/include,
 #              as Cradle's checkouts too; then the compiler's own, when
@@ -45,7 +45,7 @@ NDKFLAGS=
 [ -n "${NDK:-}" ] && NDKFLAGS="-I$NDK"
 # GFOpenGPU's headers from stream v1.6 on (PATH_FILL, COMPOSITE_PD): the first
 # folder that has them, then the compiler's own if they are that new
-gpu_ok() { [ -f "$1/opengpu/stream.h" ] && [ -f "$1/proto/opengpu.h" ] && grep -q OGPU_OP_PATH_FILL "$1/opengpu/stream.h"; }
+gpu_ok() { [ -f "$1/gfopengpu/stream.h" ] && [ -f "$1/proto/gfopengpu.h" ] && grep -q OGPU_OP_PATH_FILL "$1/gfopengpu/stream.h"; }
 if [ -n "${OPENGPU_INCLUDE:-}" ]; then
     gpu_ok "$OPENGPU_INCLUDE" || { echo "OPENGPU_INCLUDE=$OPENGPU_INCLUDE has no GFOpenGPU headers of stream v1.6 or later" >&2; exit 1; }
 else
@@ -57,9 +57,9 @@ fi
 if [ -n "${OPENGPU_INCLUDE:-}" ]; then
     echo "gfopengpu.library's headers: $OPENGPU_INCLUDE"
     # after the NDK's, so its exec and proto headers come first, but ahead
-    # of the compiler's own (a stove's opengpu/ may be older)
+    # of the compiler's own (a stove's gfopengpu/ may be older)
     NDKFLAGS="$NDKFLAGS -I$OPENGPU_INCLUDE"
-elif printf '#include <opengpu/stream.h>\n#ifndef OGPU_OP_PATH_FILL\n#error old\n#endif\n#include <proto/opengpu.h>\n' \
+elif printf '#include <gfopengpu/stream.h>\n#ifndef OGPU_OP_PATH_FILL\n#error old\n#endif\n#include <proto/gfopengpu.h>\n' \
         | "$CC" $NDKFLAGS -E -x c - >/dev/null 2>&1; then
     echo "gfopengpu.library's headers: the compiler's own"
 else
