@@ -1,9 +1,9 @@
 /* GFOpenFont on Amiga: the same fill worker, on a cores board or the main CPU.
  *
  * Not part of the x86/ARM64 bootstrap. Build it with the os32 stove, next to
- * a checkout of openamigamulticore:
+ * a checkout of gfopenmulticore:
  *
- *   m68k-amigaos-gcc -O2 -Iinclude -Isrc -I../openamigamulticore/include \
+ *   m68k-amigaos-gcc -O2 -Iinclude -Isrc -I../gfopenmulticore/include \
  *       -c src/openfont_omc.c
  *
  * OMC_RunRange runs of_omc_fill_one once per codepoint. On a cores board that

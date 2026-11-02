@@ -1,5 +1,5 @@
 /* GFOpenMulticore range against the CPU loop. Amiga only.
- * Build: amiga/build.sh with OMC_INC pointing at openamigamulticore/include
+ * Build: amiga/build.sh with OMC_INC pointing at gfopenmulticore/include
  * and the NDK. */
 #include "gfopenfont/gfopenfont.h"
 #include "openfont_internal.h"

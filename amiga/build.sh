@@ -53,7 +53,7 @@ for cpu in 68040; do
     echo "$OUT/openfontshape-$cpu ($(wc -c < "$OUT/openfontshape-$cpu") bytes)"
 done
 
-# The GFOpenMulticore path needs the NDK and openamigamulticore/include.
+# The GFOpenMulticore path needs the NDK and gfopenmulticore/include.
 # OMC_INC is that include directory. Without it, only the range test is built.
 # Builds are for the 68040 only (the target, 68040 + FPU).
 if [ -n "${OMC_INC:-}" ]; then

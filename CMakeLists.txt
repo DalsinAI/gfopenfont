@@ -134,10 +134,10 @@ if(OPENFONT_HARFBUZZ_REF)
     endif()
 endif()
 
-# OF_DrawGlyphsA's drawing (src/of_gpu.c) on openamigartg's GFOpenGPU CPU
-# core, against cairo filling the same outlines, given an openamigartg
+# OF_DrawGlyphsA's drawing (src/of_gpu.c) on gfopenrtg's GFOpenGPU CPU
+# core, against cairo filling the same outlines, given a gfopenrtg
 # checkout and cairo's headers. Only for testing; the library needs neither.
-set(OPENFONT_OPENAMIGARTG "" CACHE PATH "an openamigartg checkout, for test_gpu")
+set(OPENFONT_OPENAMIGARTG "" CACHE PATH "a gfopenrtg checkout, for test_gpu")
 if(OPENFONT_OPENAMIGARTG)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(OPENFONT_CAIRO REQUIRED cairo)

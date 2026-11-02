@@ -8,7 +8,7 @@
  * GFOpenFont, through the env. Where those leave a corner open, bullet_core.cpp
  * says "ABI test" and tests/BulletABITest measures OS 3.2's answer.
  *
- * The core is lean C++ (openamigagcc docs/lean-cxx.md, library profile);
+ * The core is lean C++ (gfopengcc docs/lean-cxx.md, library profile);
  * this header is plain C, so the C library shell (openbullet_lib.c) and
  * the C tests use it as is. Memory and the font come in through struct
  * obl_env, so tests/m68k drives the core under qemu-m68k over fonts in

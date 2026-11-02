@@ -6,7 +6,7 @@
  * .otag's tags, the size, DPI, shear and emboldening, glyph maps from
  * GFOpenFont's coverage.
  *
- * The two cores are AmiCradle's (amigachrome-guest libraries/opendiskfont
+ * The two cores are AmiCradle's (amicradle-guest libraries/opendiskfont
  * and libraries/openbullet), copied into textfont/ unchanged: lean C++,
  * integer only, everything they need through their env. Here the env is
  * exec, dos and graphics for diskfont's, and GFOpenFont's own functions for

@@ -9,11 +9,11 @@
 #   CC, CXX    the compilers (default: the os32-gcc16 stove, then the
 #              release unpacked under /opt)
 #   NDK        a folder of AmigaOS headers, when the compiler has none of
-#              its own: GFOpenNDK's Include_H (openamigasdk/OpenNDK/Include_H)
+#              its own: GFOpenNDK's Include_H (gfopensdk/OpenNDK/Include_H)
 #   OPENGPU_INCLUDE  gfopengpu.library's headers (opengpu/stream.h,
 #              proto/opengpu.h), for OF_DrawGlyphsA: the GFOpen SDK's Include
-#              (default: next to NDK, openamigasdk/Include; then beside
-#              this checkout, openamigasdk/Include or openamigartg/include,
+#              (default: next to NDK, gfopensdk/Include; then beside
+#              this checkout, gfopensdk/Include or gfopenrtg/include,
 #              as Cradle's checkouts too; then the compiler's own, when
 #              they are stream v1.6 or later)
 #
@@ -49,7 +49,7 @@ gpu_ok() { [ -f "$1/opengpu/stream.h" ] && [ -f "$1/proto/opengpu.h" ] && grep -
 if [ -n "${OPENGPU_INCLUDE:-}" ]; then
     gpu_ok "$OPENGPU_INCLUDE" || { echo "OPENGPU_INCLUDE=$OPENGPU_INCLUDE has no GFOpenGPU headers of stream v1.6 or later" >&2; exit 1; }
 else
-    for d in ${NDK:+"$NDK/../../Include"} "$ROOT/../openamigasdk/Include" "$ROOT/../openamigartg/include" \
+    for d in ${NDK:+"$NDK/../../Include"} "$ROOT/../gfopensdk/Include" "$ROOT/../gfopenrtg/include" \
              "$ROOT/../DalsinAI__openamigasdk/Include" "$ROOT/../DalsinAI__openamigartg/include"; do
         if gpu_ok "$d"; then OPENGPU_INCLUDE=$(cd "$d" && pwd); break; fi
     done
@@ -64,7 +64,7 @@ elif printf '#include <opengpu/stream.h>\n#ifndef OGPU_OP_PATH_FILL\n#error old\
     echo "gfopengpu.library's headers: the compiler's own"
 else
     echo "GFOpenGPU headers of stream v1.6 or later not found: set OPENGPU_INCLUDE to the GFOpen SDK's Include" >&2
-    echo "(or openamigartg's include)" >&2
+    echo "(or gfopenrtg's include)" >&2
     exit 1
 fi
 
@@ -88,7 +88,7 @@ LIBFLAGS="$OFFLAGS"
 for f in library/of_runtime library/of_stack library/of_io_dos library/of_textfont; do
     "$CC" $COMMON $NDKFLAGS $LIBFLAGS -c "$ROOT/$f.c" -o "$OBJ/of_$(basename "$f").o"
 done
-# OF_OpenTextFont's two cores (library/textfont, from amigachrome-guest's
+# OF_OpenTextFont's two cores (library/textfont, from amicradle-guest's
 # GFOpenDiskFont and GFOpenBullet): lean C++, library profile, integer only
 LEAN="-std=gnu++23 -fno-exceptions -fno-rtti -fno-threadsafe-statics -fno-asynchronous-unwind-tables \
  -fno-unwind-tables -nostdlib++ -fno-builtin -fno-tree-loop-distribute-patterns -Wall -Wextra -Werror -Wno-unused-parameter"

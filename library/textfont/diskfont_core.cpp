@@ -10,7 +10,7 @@
  * the expunge guard are ported from the other team's rewrite (PR #74, plain
  * C, the same clean-room rules); README.md says where the two differed.
  *
- * Built with openamigagcc's lean C++ library profile:
+ * Built with gfopengcc's lean C++ library profile:
  *   -std=gnu++23 -fno-exceptions -fno-rtti -fno-threadsafe-statics
  *   -fno-asynchronous-unwind-tables -fno-unwind-tables -nostdlib++
  * No static constructors, no function-local statics, no standard headers
