@@ -20,8 +20,8 @@
 #include "gfopenfont/gfopenfont.h"
 #include "openfont_internal.h"
 
-#include <libraries/openmulticore.h>
-#include <proto/openmulticore.h>
+#include <libraries/gfopenmulticore.h>
+#include <proto/gfopenmulticore.h>
 
 /* First argument is the index (D0 as well). The rest are the job's omj_Args,
  * the same convention as OMC_SubmitRange's square() example. */

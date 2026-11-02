@@ -4,8 +4,8 @@
 #include "gfopenfont/gfopenfont.h"
 #include "openfont_internal.h"
 
-#include <libraries/openmulticore.h>
-#include <proto/openmulticore.h>
+#include <libraries/gfopenmulticore.h>
+#include <proto/gfopenmulticore.h>
 
 #include <stddef.h>
 #include <stdint.h>
