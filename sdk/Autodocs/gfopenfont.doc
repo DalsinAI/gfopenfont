@@ -320,7 +320,7 @@ gfopenfont.library/OF_DrawGlyphsA                 gfopenfont.library/OF_DrawGlyp
 	OFERR_FONT (the face can't be set to the size).
 
    SEE ALSO
-	OF_ShapeA(), OF_GlyphOutline(), <opengpu/stream.h>
+	OF_ShapeA(), OF_GlyphOutline(), <gfopengpu/stream.h>
 
 gfopenfont.library/OF_ErrorString                 gfopenfont.library/OF_ErrorString
 
