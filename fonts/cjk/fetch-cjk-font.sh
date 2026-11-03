@@ -21,8 +21,8 @@ NAME=DroidSansFallbackFull.ttf
 # AOSP's copy, at a fixed tag; googlesource gives files base64 with ?format=TEXT
 TAG=android-14.0.0_r1
 BASE="https://android.googlesource.com/platform/frameworks/base/+/refs/tags/$TAG/data/fonts"
-SHA256=${CJK_FONT_SHA256:-PINNED_ON_FIRST_FETCH}
-NOTICE_SHA256=${CJK_NOTICE_SHA256:-PINNED_ON_FIRST_FETCH}
+SHA256=${CJK_FONT_SHA256:-2392015530438bafc48edfc4aee6d9de2387f627a6134d8ab3dfcc99d21c8240}
+NOTICE_SHA256=${CJK_NOTICE_SHA256:-38751245389e1e23f73e6f5384b5cbe7fa972cc4410c5adc9c04b082a0b9561a}
 
 sha() {
     if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1" | cut -c1-64; else shasum -a 256 "$1" | cut -c1-64; fi
