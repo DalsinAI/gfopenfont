@@ -33,7 +33,14 @@ check() {  # FILE [SHA256]
     [ "$got" = "$want" ] || { echo "fetch-cjk-font.sh: $1 has sha256 $got, not $want" >&2; return 1; }
 }
 fetch() {  # NAME SHA256 DEST
-    curl -fsSL "$BASE/$1?format=TEXT" | base64 -d > "$3.tmp"
+    # googlesource answers 503 now and then: four tries, 2, 4 and 8 s apart
+    n=0
+    until curl -fsSL "$BASE/$1?format=TEXT" > "$3.b64"; do
+        n=$((n + 1))
+        [ $n -lt 4 ] || { rm -f "$3.b64"; echo "fetch-cjk-font.sh: cannot fetch $1" >&2; exit 1; }
+        sleep $((1 << n))
+    done
+    base64 -d < "$3.b64" > "$3.tmp" && rm -f "$3.b64"
     check "$3.tmp" "$2" || { rm -f "$3.tmp"; exit 1; }
     mv "$3.tmp" "$3"
 }
