@@ -312,7 +312,8 @@ what it found in `ENVARC:GFOpenFont/FontIndex`.
 `ENVARC:GFOpenFont/Aliases` holds the user's aliases, one a line
 (`Name=Family,Family`), before GFOpenFont's own. `ENVARC:GFOpenFont/Fallbacks` is
 the default fallback chain (`DejaVu Sans,Noto Sans,Liberation Sans,DejaVu Sans
-Mono` without it).
+Mono,Droid Sans Fallback` without it). Droid Sans Fallback is the CJK face
+([fonts/cjk](fonts/cjk/README.md)): packages put it in `FONTS:`.
 
 ### Using it
 
@@ -489,4 +490,7 @@ library is copied. FreeType and HarfBuzz are no longer in GFOpenFont; the
 reference tests build against separate trees of theirs. The fonts in
 `fonts/amiga` are DejaVu Sans Mono's, under the Bitstream Vera licence with
 DejaVu's changes in the public domain
-([fonts/amiga/LICENSE-DejaVu.txt](fonts/amiga/LICENSE-DejaVu.txt)).
+([fonts/amiga/LICENSE-DejaVu.txt](fonts/amiga/LICENSE-DejaVu.txt)). The CJK
+face, Droid Sans Fallback Full, is the Android Open Source Project's under the
+Apache License 2.0; it is not in this repository: `fonts/cjk/fetch-cjk-font.sh`
+fetches it at build time with its NOTICE ([fonts/cjk](fonts/cjk/README.md)).
