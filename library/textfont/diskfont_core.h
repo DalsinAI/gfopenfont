@@ -230,6 +230,7 @@ struct odf_AvailFontsHeader { odf_u16 afh_NumEntries; };   /* then the entries *
 #define ODF_OT_OTagList    (ODF_OT_Level0 | ODF_OT_Indirect | 0x15)
 #define ODF_OT_GlyphMap    (ODF_OT_Level0 | ODF_OT_Indirect | 0x20)
 #define ODF_OT_FileIdent   (ODF_OT_Level1 | 0x01)
+#define ODF_OT_YSizeFactor (ODF_OT_Level1 | 0x11)   /* high word: point height term, low: black height term */
 #define ODF_OT_Engine      (ODF_OT_Level1 | ODF_OT_Indirect | 0x02)
 #define ODF_OT_AvailSizes  (ODF_OT_Level1 | ODF_OT_Indirect | 0x20)
 #define ODF_OT_MAXAVAILSIZES 20
