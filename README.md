@@ -365,6 +365,13 @@ when it can't read the outline either, the font comes from its bitmap sizes,
 or the nearest size already in memory, as before; so a caller that needs the
 size it asked for checks `tf_YSize`.
 
+Since 1.7 an `.otag`'s `OT_YSizeFactor` is honoured, as diskfont.library does
+it: the point height is the YSize times its high word over its low word
+(diskfonttag.h's point height and black height terms), so a font whose
+ascent and descent together are taller than its em (DejaVu's are 1.164 em)
+fits the YSize instead of losing its descenders. An `.otag` without the tag
+is drawn as before.
+
 Revision 3 (1.3) adds what a layout engine such as WebCore asks:
 `OF_ShapeA` (UTF-16, script, language, direction, features over ranges),
 `OF_GetFaceMetrics`, `OF_GlyphOutline`, `OF_GlyphExtents`,

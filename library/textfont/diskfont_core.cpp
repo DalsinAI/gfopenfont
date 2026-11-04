@@ -835,7 +835,9 @@ struct Glyph {
 /* An outline font at one size (from #74): the engine draws characters 32
  * to 255 at the request's TA_DeviceDPI, else DFCTRL_XDPI and _YDPI, the
  * point height being the YSize at that vertical DPI (72 points to the
- * inch), the dot size DFCTRL_XDOTP and _YDOTP. Each glyph's black box is
+ * inch), times the .otag's OT_YSizeFactor when it has one (pointSize =
+ * ysize * high word / low word, as diskfonttag.h gives it, so the font's
+ * ascent and descent fit the YSize), the dot size DFCTRL_XDOTP and _YDOTP. Each glyph's black box is
  * packed in order (its width the box's), tf_CharKern its left from the
  * origin, tf_CharSpace the rest of its advance (at least 0); one without
  * a map is 0 wide and advances 0. The baseline is under the tallest
@@ -870,7 +872,13 @@ DFH *engine_open(odf_ctx *c, void *dir, const char *fontname, const odf_TTextAtt
     t[2] = {ODF_TAG_DONE, 0};
     if (ecall(c, lib, ODF_LVO_SetInfoA, ge, t) != u32(ODF_OTERR_Success)) goto out;
     t[0] = {ODF_OT_DeviceDPI, dpi};
-    t[1] = {ODF_OT_PointHeight, u32((u64(ysize) * 72 << 16) / ydpi)};
+    {
+        u64 ph = (u64(ysize) * 72 << 16) / ydpi;
+        u32 f = 0;
+        if (find_tag(ot, false, ODF_OT_YSizeFactor, &f) && (f >> 16) && (f & 0xffff))
+            ph = ph * (f >> 16) / (f & 0xffff);
+        t[1] = {ODF_OT_PointHeight, u32(ph)};
+    }
     t[2] = {ODF_OT_DotSize, (u32(c->ctrl[2]) << 16) | (u32(c->ctrl[3]) & 0xffff)};
     t[3] = {ODF_TAG_DONE, 0};
     if (ecall(c, lib, ODF_LVO_SetInfoA, ge, t) != u32(ODF_OTERR_Success)) goto out;
