@@ -61,7 +61,7 @@ int start(void)
 #include <proto/gfopengpu.h>
 
 #define LIB_VERSION 1
-#define LIB_REVISION 5
+#define LIB_REVISION 6
 #define STACK_SIZE (64 * 1024)
 
 /* The same values as the SDK header's (sdk/Include_H/libraries/gfopenfont.h) */
@@ -166,8 +166,8 @@ struct Library *DataTypesBase;     /* opened by the first OF_GlyphColorBitmap */
 struct Library *OpenGPUBase;       /* opened by the first OF_DrawGlyphsA */
 
 static const char lib_name[] = "gfopenfont.library";
-static const char lib_id[] = "gfopenfont.library 1.5 (1.11.2026) GFOpenFont 0.6, AmiCradle Team\r\n";
-static const char ver_tag[] __attribute__((used)) = "$VER: gfopenfont.library 1.5 (1.11.2026) GFOpenFont 0.6, AmiCradle Team";
+static const char lib_id[] = "gfopenfont.library 1.6 (4.11.2026) GFOpenFont 0.6, AmiCradle Team\r\n";
+static const char ver_tag[] __attribute__((used)) = "$VER: gfopenfont.library 1.6 (4.11.2026) GFOpenFont 0.6, AmiCradle Team";
 
 #define REG(r, decl) register decl __asm(#r)
 #define BASE REG(a6, struct OpenFontBase *b)

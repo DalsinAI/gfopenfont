@@ -12,8 +12,9 @@
  * exec, dos and graphics for diskfont's, and GFOpenFont's own functions for
  * bullet's, called in this library, under its lock, on its stack. The
  * engine diskfont's core opens by name, "bullet.library", is that core:
- * nothing is opened. Any other engine an .otag names is opened as
- * diskfont.library would open it.
+ * nothing is opened, unless the outline is one GFOpenFont can't read (1.6:
+ * the system's bullet.library then draws it). Any other engine an .otag
+ * names is opened as diskfont.library would open it.
  *
  * Copyright (c) 2026 AmiCradle Team. OpenFont, MIT licence (LICENSE). */
 #include <exec/types.h>
@@ -362,32 +363,110 @@ static void e_lib_close(struct odf_ctx *c, void *lib)
     if (!IS_BULLET(lib)) CloseLibrary((struct Library *)lib);
 }
 
-static odf_u32 e_lib_call(struct odf_ctx *c, void *lib, odf_s32 lvo, void *p0, void *p1)
+/* an engine library's call by LVO, A6 its base, loaded around the call (A6
+ * may be the frame pointer) */
+static odf_u32 lvo_call(void *lib, odf_s32 lvo, void *p0, void *p1)
 {
-    if (IS_BULLET(lib)) {
-        struct obl_GlyphEngine *ge = (struct obl_GlyphEngine *)p0;
-        const struct obl_TagItem *tags = (const struct obl_TagItem *)p1;
-        switch (lvo) {
-        case LVO_OpenEngine:   return (odf_u32)obl_OpenEngine(&bullet_env, T(c), (void *)&bullet_token, engine_name);
-        case LVO_CloseEngine:  obl_CloseEngine(ge); return 0;
-        case LVO_SetInfoA:     return obl_SetInfoA(ge, tags);
-        case LVO_ObtainInfoA:  return obl_ObtainInfoA(ge, tags);
-        case LVO_ReleaseInfoA: return obl_ReleaseInfoA(ge, tags);
-        default:               return 0;
+    register ULONG d0 __asm("d0");
+    register LONG off __asm("d1") = lvo;
+    register APTR a0 __asm("a0") = p0;
+    register APTR a1 __asm("a1") = p1;
+    __asm volatile("move.l %%a6,-(%%sp)\n\tmove.l %[lib],%%a6\n\tjsr (%%a6,%%d1.l)\n\tmove.l (%%sp)+,%%a6"
+                   : "=r"(d0), "+r"(off), "+r"(a0), "+r"(a1) : [lib] "a"(lib) : "cc", "memory");
+    return d0;
+}
+
+/* ---- "bullet": GFOpenBullet's core, and the system's bullet.library behind it
+ * GFOpenFont reads TrueType and OpenType. An outline it can't read (OS 3.2's
+ * CGTriumvirate, CGTimes and LetterGothic are Agfa Intellifont .type files)
+ * was OTERR_BadFace, and the core then gave the nearest size of that font
+ * already in memory, or none: GFOpenBlanker's credits came out in a 13-pixel
+ * bitmap or topaz (Instance-32, 4 November 2026). diskfont.library would have
+ * drawn them with the system's bullet.library, so here, when the core can't
+ * take the outline (OT_OTagPath or OT_OTagList), LIBS:bullet.library is given
+ * the same tags and, if it takes them, does everything for that engine from
+ * then on. The diskfont core only passes the engine back to these calls, so
+ * the handle it holds is this wrapper. No system bullet.library, or one that
+ * can't read it either: OTERR_BadFace as before. */
+struct of_bullet {
+    struct obl_GlyphEngine head;               /* gle_Library, gle_Name: what an engine starts with */
+    struct obl_GlyphEngine *own;               /* GFOpenBullet's core, until the system's takes over */
+    struct Library *sys;                       /* LIBS:bullet.library, once it has */
+    void *sys_ge;                              /* its engine */
+};
+
+/* 1 when the tags give the engine its outline (utility's TAG_DONE 0, TAG_IGNORE 1, TAG_MORE 2, TAG_SKIP 3) */
+static int has_outline_tag(const struct obl_TagItem *t)
+{
+    while (t) {
+        switch (t->ti_Tag) {
+        case 0: return 0;
+        case 1: t++; break;
+        case 2: t = (const struct obl_TagItem *)t->ti_Data; break;
+        case 3: t += t->ti_Data + 1; break;
+        default:
+            if (t->ti_Tag == OBL_OT_OTagPath || t->ti_Tag == OBL_OT_OTagList) return 1;
+            t++;
         }
     }
-    {
-        /* another engine's library: its call by LVO, A6 its base, loaded
-         * around the call (A6 may be the frame pointer) */
-        register ULONG d0 __asm("d0");
-        register LONG off __asm("d1") = lvo;
-        register APTR a0 __asm("a0") = p0;
-        register APTR a1 __asm("a1") = p1;
-        (void)c;
-        __asm volatile("move.l %%a6,-(%%sp)\n\tmove.l %[lib],%%a6\n\tjsr (%%a6,%%d1.l)\n\tmove.l (%%sp)+,%%a6"
-                       : "=r"(d0), "+r"(off), "+r"(a0), "+r"(a1) : [lib] "a"(lib) : "cc", "memory");
-        return d0;
+    return 0;
+}
+
+static odf_u32 sys_take(struct of_bullet *b, const struct obl_TagItem *tags)
+{
+    struct Library *lib = OpenLibrary((CONST_STRPTR)bullet_name, 0);
+    void *ge;
+    if (!lib) return OBL_OTERR_BadFace;
+    if (!(ge = (void *)lvo_call(lib, LVO_OpenEngine, NULL, NULL))) { CloseLibrary(lib); return OBL_OTERR_BadFace; }
+    if (lvo_call(lib, LVO_SetInfoA, ge, (void *)tags) != OBL_OTERR_Success) {
+        lvo_call(lib, LVO_CloseEngine, ge, NULL);
+        CloseLibrary(lib);
+        return OBL_OTERR_BadFace;
     }
+    if (b->own) { obl_CloseEngine(b->own); b->own = NULL; }
+    b->sys = lib;
+    b->sys_ge = ge;
+    return OBL_OTERR_Success;
+}
+
+static odf_u32 bullet_call(struct odf_ctx *c, odf_s32 lvo, void *p0, void *p1)
+{
+    struct of_bullet *b = (struct of_bullet *)p0;
+    const struct obl_TagItem *tags = (const struct obl_TagItem *)p1;
+    odf_u32 r;
+    if (lvo == LVO_OpenEngine) {
+        if (!(b = AllocVec(sizeof *b, MEMF_PUBLIC | MEMF_CLEAR))) return 0;
+        b->head.gle_Library = (void *)&bullet_token;
+        b->head.gle_Name = (char *)engine_name;
+        b->own = obl_OpenEngine(&bullet_env, T(c), (void *)&bullet_token, engine_name);
+        return (odf_u32)b;
+    }
+    if (!b) return (odf_u32)OBL_OTERR_Failure;
+    if (b->sys) {
+        r = lvo_call(b->sys, lvo, b->sys_ge, p1);
+        if (lvo == LVO_CloseEngine) { CloseLibrary(b->sys); FreeVec(b); return 0; }
+        return r;
+    }
+    switch (lvo) {
+    case LVO_CloseEngine:
+        if (b->own) obl_CloseEngine(b->own);
+        FreeVec(b);
+        return 0;
+    case LVO_SetInfoA:
+        r = b->own ? obl_SetInfoA(b->own, tags) : OBL_OTERR_BadFace;
+        if (r == OBL_OTERR_BadFace && has_outline_tag(tags)) r = sys_take(b, tags);
+        return r;
+    case LVO_ObtainInfoA:  return b->own ? obl_ObtainInfoA(b->own, tags) : (odf_u32)OBL_OTERR_Failure;
+    case LVO_ReleaseInfoA: return b->own ? obl_ReleaseInfoA(b->own, tags) : (odf_u32)OBL_OTERR_Failure;
+    default:               return 0;
+    }
+}
+
+static odf_u32 e_lib_call(struct odf_ctx *c, void *lib, odf_s32 lvo, void *p0, void *p1)
+{
+    if (IS_BULLET(lib)) return bullet_call(c, lvo, p0, p1);
+    (void)c;
+    return lvo_call(lib, lvo, p0, p1);
 }
 
 static const struct odf_env diskfont_env = {

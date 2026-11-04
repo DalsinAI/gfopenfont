@@ -1,6 +1,6 @@
 /* OpenFontLibTest: gfopenfont.library's calls on AmigaOS 3.2, for a lab.
  *
- *   OpenFontLibTest FONT/A,FONTDIR/A,CACHE,OUTLINE/K,COLOR/K
+ *   OpenFontLibTest FONT/A,FONTDIR/A,CACHE,OUTLINE/K,COLOR/K,INTELLIFONT/K
  *
  * FONT is DejaVuSans.ttf: the shaping and raster hash, and the layout
  * hash of revision 3's calls, must be the ones the host's
@@ -9,6 +9,11 @@
  * FONTDIR holds DejaVu
  * and Liberation, for the index, the aliases and fallback. CACHE is an
  * .ofc file openfontcompile made on the host from FONT (sizes 9 12 16 24).
+ * INTELLIFONT (1.6) is an outline .font whose outline GFOpenFont can't read,
+ * such as OS 3.2's CGTriumvirate.font (an Intellifont .type): with the
+ * system's bullet.library in LIBS: it must come back at 83 and then at 72
+ * pixels exactly, as diskfont.library's OpenDiskFont gives it (1.5 gave the
+ * nearest size already in memory, or none). No bullet.library: not run.
  * OUTLINE is an outline .font in FONTS: whose .otag names a TrueType or
  * OpenType file (OT_Spec1), for OF_OpenTextFont at a size it has no bitmap
  * for; without it only bitmap fonts are opened (topaz.font).
@@ -100,7 +105,7 @@ int main(void)
 {
     static const char text[] = "Office AVWa fi \xC3\xA9";
     static const char snow[] = "snow \xE2\x98\x83!";
-    LONG args[5] = { 0, 0, 0, 0, 0 };
+    LONG args[6] = { 0, 0, 0, 0, 0, 0 };
     struct RDArgs *rda;
     struct OFFace *face, *found;
     struct OFFaceInfo info;
@@ -111,7 +116,7 @@ int main(void)
 
     rda = ReadArgs((CONST_STRPTR)"FONT/A,FONTDIR/A,CACHE,OUTLINE/K,COLOR/K", args, NULL);
     if (!rda) {
-        printf("usage: OpenFontLibTest FONT/A,FONTDIR/A,CACHE,OUTLINE/K,COLOR/K\n");
+        printf("usage: OpenFontLibTest FONT/A,FONTDIR/A,CACHE,OUTLINE/K,COLOR/K,INTELLIFONT/K\n");
         return 20;
     }
     OpenFontBase = OpenLibrary((CONST_STRPTR)"gfopenfont.library", 1);
@@ -481,6 +486,24 @@ int main(void)
             if (tf) {
                 printf("     %s 29: baseline %u, XSize %u\n", (char *)args[3], tf->tf_Baseline, tf->tf_XSize);
                 CloseFont(tf);
+            }
+        }
+        if (args[5]) {
+            struct Library *bl = OpenLibrary((CONST_STRPTR)"bullet.library", 0);
+            if (!bl) printf("     OF_OpenTextFont: no bullet.library in LIBS:, the Intellifont check not run\n");
+            else {
+                static const UWORD sizes[2] = { 83, 72 };
+                int i;
+                CloseLibrary(bl);
+                for (i = 0; i < 2; i++) {
+                    char what[80];
+                    ta.ta_Name = (STRPTR)args[5];
+                    ta.ta_YSize = sizes[i];
+                    tf = OF_OpenTextFont(&ta);
+                    snprintf(what, sizeof what, "OF_OpenTextFont: an Intellifont outline at %u", sizes[i]);
+                    check(tf != NULL && tf->tf_YSize == sizes[i], what);
+                    if (tf) { printf("     %s %u: got %u\n", (char *)args[5], sizes[i], tf->tf_YSize); CloseFont(tf); }
+                }
             }
         }
     }

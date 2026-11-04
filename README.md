@@ -357,6 +357,14 @@ the first, GFOpenFont's own functions for the second, inside this library. It
 adds 25,580 bytes (1,028,488 to 1,054,068). Check `lib_Revision` against
 `OPENFONT_REVISION_TEXTFONT` (2) before calling it.
 
+GFOpenFont reads TrueType and OpenType outlines. An `.otag` whose outline it
+can't read (OS 3.2's own CGTriumvirate, CGTimes and LetterGothic are Agfa
+Intellifont `.type` files) goes, since 1.6, to the system's
+`LIBS:bullet.library`, as diskfont.library would have done. Without one, or
+when it can't read the outline either, the font comes from its bitmap sizes,
+or the nearest size already in memory, as before; so a caller that needs the
+size it asked for checks `tf_YSize`.
+
 Revision 3 (1.3) adds what a layout engine such as WebCore asks:
 `OF_ShapeA` (UTF-16, script, language, direction, features over ranges),
 `OF_GetFaceMetrics`, `OF_GlyphOutline`, `OF_GlyphExtents`,
