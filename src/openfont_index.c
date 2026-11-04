@@ -36,9 +36,10 @@ static const char *const builtin_aliases[] = {
     NULL
 };
 
-/* Droid Sans Fallback last: Chinese, Japanese and Korean (fonts/cjk), a
- * large face opened only for what the others lack */
-static const char default_fallbacks[] = "DejaVu Sans,Noto Sans,Liberation Sans,DejaVu Sans Mono,Droid Sans Fallback";
+/* The CJK faces last (fonts/cjk): Droid Sans Fallback for Chinese and
+ * Japanese, NanumGothic for Korean, large faces opened only for what the
+ * others lack */
+static const char default_fallbacks[] = "DejaVu Sans,Noto Sans,Liberation Sans,DejaVu Sans Mono,Droid Sans Fallback,NanumGothic";
 
 /* ---- small string helpers (ASCII case only, as font names are) ---- */
 
