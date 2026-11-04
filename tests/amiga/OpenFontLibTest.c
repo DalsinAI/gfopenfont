@@ -114,7 +114,7 @@ int main(void)
     ULONG n, i, hash = 2166136261UL;
     LONG advance, err;
 
-    rda = ReadArgs((CONST_STRPTR)"FONT/A,FONTDIR/A,CACHE,OUTLINE/K,COLOR/K", args, NULL);
+    rda = ReadArgs((CONST_STRPTR)"FONT/A,FONTDIR/A,CACHE,OUTLINE/K,COLOR/K,INTELLIFONT/K", args, NULL);
     if (!rda) {
         printf("usage: OpenFontLibTest FONT/A,FONTDIR/A,CACHE,OUTLINE/K,COLOR/K,INTELLIFONT/K\n");
         return 20;
