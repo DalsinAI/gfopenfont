@@ -27,7 +27,7 @@ mkdir -p "$OUT" "$WORK"
 
 find_cc() {
     for d in "$HOME/AmiCradle/stoves/os32-gcc16/bin" "$HOME/AmiCradle/stoves/os32-gcc16/prefix/bin" \
-             /opt/openamigagcc-16.2.0-open4-x86_64-linux/bin; do
+             /opt/gfopenamigagcc-16.2.0-open6-x86_64-linux/bin /opt/openamigagcc-16.2.0-open4-x86_64-linux/bin; do
         if [ -x "$d/m68k-amigaos-gcc" ]; then echo "$d"; return; fi
     done
 }
