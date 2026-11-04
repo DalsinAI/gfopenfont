@@ -312,8 +312,9 @@ what it found in `ENVARC:GFOpenFont/FontIndex`.
 `ENVARC:GFOpenFont/Aliases` holds the user's aliases, one a line
 (`Name=Family,Family`), before GFOpenFont's own. `ENVARC:GFOpenFont/Fallbacks` is
 the default fallback chain (`DejaVu Sans,Noto Sans,Liberation Sans,DejaVu Sans
-Mono,Droid Sans Fallback` without it). Droid Sans Fallback is the CJK face
-([fonts/cjk](fonts/cjk/README.md)): packages put it in `FONTS:`.
+Mono,Droid Sans Fallback,NanumGothic` without it). Droid Sans Fallback (Chinese,
+Japanese) and NanumGothic (Korean) are the CJK faces
+([fonts/cjk](fonts/cjk/README.md)): packages put them in `FONTS:`.
 
 ### Using it
 
@@ -491,6 +492,7 @@ reference tests build against separate trees of theirs. The fonts in
 `fonts/amiga` are DejaVu Sans Mono's, under the Bitstream Vera licence with
 DejaVu's changes in the public domain
 ([fonts/amiga/LICENSE-DejaVu.txt](fonts/amiga/LICENSE-DejaVu.txt)). The CJK
-face, Droid Sans Fallback Full, is the Android Open Source Project's under the
-Apache License 2.0; it is not in this repository: `fonts/cjk/fetch-cjk-font.sh`
-fetches it at build time with its NOTICE ([fonts/cjk](fonts/cjk/README.md)).
+faces are not in this repository: Droid Sans Fallback Full (the Android Open
+Source Project's, Apache License 2.0) and NanumGothic (NHN Corporation's, SIL
+Open Font License 1.1); `fonts/cjk/fetch-cjk-font.sh` fetches them at build
+time with their licences ([fonts/cjk](fonts/cjk/README.md)).
