@@ -229,10 +229,13 @@ struct odf_AvailFontsHeader { odf_u16 afh_NumEntries; };   /* then the entries *
 #define ODF_OT_OTagPath    (ODF_OT_Level0 | ODF_OT_Indirect | 0x14)
 #define ODF_OT_OTagList    (ODF_OT_Level0 | ODF_OT_Indirect | 0x15)
 #define ODF_OT_GlyphMap    (ODF_OT_Level0 | ODF_OT_Indirect | 0x20)
+#define ODF_OT_GlyphCode2  (ODF_OT_Level0 | 0x12)
+#define ODF_OT_WidthList   (ODF_OT_Level0 | ODF_OT_Indirect | 0x21)
 #define ODF_OT_FileIdent   (ODF_OT_Level1 | 0x01)
-#define ODF_OT_YSizeFactor (ODF_OT_Level1 | 0x11)   /* high word: point height term, low: black height term */
 #define ODF_OT_Engine      (ODF_OT_Level1 | ODF_OT_Indirect | 0x02)
 #define ODF_OT_AvailSizes  (ODF_OT_Level1 | ODF_OT_Indirect | 0x20)
+#define ODF_OT_YSizeFactor (ODF_OT_Level1 | 0x11)
+#define ODF_OT_IsFixed     (ODF_TAG_USER | 0x2000 | 0x13)   /* OT_Level2 */
 #define ODF_OT_MAXAVAILSIZES 20
 #define ODF_OTE_Bullet     "bullet"
 #define ODF_OTSUFFIX       ".otag"
@@ -251,6 +254,12 @@ struct odf_GlyphEngine {
     void *gle_Library;
     char *gle_Name;
 };                                     /* 8 bytes, then the engine's own */
+
+struct odf_GlyphWidthEntry {           /* OT_WidthList's nodes */
+    struct odf_GlyphWidthEntry *gwe_Succ, *gwe_Pred;   /* 0, 4: a MinNode */
+    odf_u16 gwe_Code;                  /* 8 */
+    odf_s32 gwe_Width;                 /* 10: FIXED, a fraction of the em */
+};                                     /* 14 bytes */
 
 struct odf_GlyphMap {
     odf_u16 glm_BMModulo, glm_BMRows;              /* 0, 2 */
@@ -319,7 +328,7 @@ struct odf_env {
     void (*seg_unload)(struct odf_ctx *c, void *seg);
     /* graphics: walks GfxBase->TextFonts (each returns non-zero to stop) */
     void (*mem_fonts)(struct odf_ctx *c, odf_font_each each, void *data);
-    struct odf_TextFont *(*open_font)(struct odf_ctx *c, struct odf_TextFont *tf); /* GFOpenFont giving tf */
+    struct odf_TextFont *(*open_font)(struct odf_ctx *c, struct odf_TextFont *tf); /* OpenFont giving tf */
     void (*close_font)(struct odf_ctx *c, struct odf_TextFont *tf);
     void (*add_font)(struct odf_ctx *c, struct odf_TextFont *tf);
     /* RemFont, only when nobody has tf open (tf_Accessors 0, checked with
@@ -349,7 +358,7 @@ struct odf_env {
  * dfh_Segment 0, or the DPI tags there with FSF_TAGGED), or NULL, and
  * then the bitmap sizes the .font lists are scaled like any other's.
  * odf_Init sets odf_engine_outline: the .otag's engine (bullet.library)
- * through the env draws every glyph. GFOpenFont (gfopenfont.library) is meant
+ * through the env draws every glyph. OpenFont (gfopenfont.library) is meant
  * to replace it. dir is the directory the .font was found in; ta's name
  * is the request's. */
 struct odf_outline {

@@ -34,8 +34,8 @@
  *  each directory of FONTS: in turn), in file order. The heaviest at the
  *  requested size wins, the earliest on a tie. With none at that size, and
  *  unless the request has FPF_DESIGNED, the source for scaling is the one
- *  that weighs most ignoring size, then is nearest in size, then larger,
- *  then earliest; fonts in memory without FPF_DESIGNED or FPF_ROMFONT
+ *  that weighs most ignoring size, then is half or twice the size, then
+ *  the largest smaller, then the smallest larger, then earliest; fonts in memory without FPF_DESIGNED or FPF_ROMFONT
  *  (scaled ones) are never sources. With FPF_DESIGNED, or when scaling
  *  fails, the same order picks the font to return unscaled.
  *
@@ -43,10 +43,14 @@
  *  ratio change when both fonts name a TA_DeviceDPI. A value v scales to
  *  (v * n + d / 2) / d (negative values by their size, signed again). A
  *  glyph of width w > 0 gets width max(1, scaled w); glyphs are packed in
- *  order, the modulo is the bits rounded up to words (at least 2 bytes).
- *  A destination pixel (x, y) is set when any source pixel in the box
- *  [floor(x * w / w'), ceil((x + 1) * w / w')) by [floor(y * y0 / Y),
- *  ceil((y + 1) * y0 / Y)) is set.
+ *  order, those sharing a source bitmap sharing one, the modulo is the bits
+ *  rounded up to words (at least 2 bytes). A destination pixel (x, y) is
+ *  the source's at floor(x * w / w') shrinking, at floor((x + 1/2) / s)
+ *  growing (s the font's X scale), and the same down the rows (Y scale).
+ *  The baseline is, growing, the rows down to it (Baseline + 1) scaled,
+ *  less one, and shrinking the Baseline scaled; the flags lose
+ *  FPF_ROMFONT, FPF_DESIGNED, FPF_REMOVED and FPF_DISKFONT; a source with
+ *  no TA_DeviceDPI scales as a square one (OS 3.2.3: topaz 4 to 33).
  */
 #include "diskfont_core.h"
 #include <cstddef>
@@ -117,6 +121,7 @@ AT(odf_GlyphMap, glm_BlackWidth, 8); AT(odf_GlyphMap, glm_BlackHeight, 10); AT(o
 AT(odf_GlyphMap, glm_YOrigin, 16); AT(odf_GlyphMap, glm_X0, 20); AT(odf_GlyphMap, glm_Y0, 22);
 AT(odf_GlyphMap, glm_X1, 24); AT(odf_GlyphMap, glm_Y1, 26); AT(odf_GlyphMap, glm_Width, 28);
 AT(odf_GlyphMap, glm_BitMap, 32);
+AT(odf_GlyphWidthEntry, gwe_Code, 8); AT(odf_GlyphWidthEntry, gwe_Width, 10);
 LAYOUT(odf_EGlyphEngine, 12);
 AT(odf_EGlyphEngine, ege_BulletBase, 4); AT(odf_EGlyphEngine, ege_GlyphEngine, 8);
 LAYOUT(odf_OutlineFont, 36);
@@ -575,9 +580,9 @@ DFH *scale_font(odf_ctx *c, const TextFont *s, u16 ny, u32 rdpi)
     const u32 ddpi = rdpi ? rdpi : sdpi;
     Ratio ry{ny, s->tf_YSize};
     Ratio rx = ry;
-    if (sdpi && ddpi) {
-        rx.n = u64(ny) * (ddpi >> 16) * (sdpi & 0xffff);
-        rx.d = u64(s->tf_YSize) * (ddpi & 0xffff) * (sdpi >> 16);
+    if (ddpi) {                             /* a source with no DPI is square */
+        rx.n = u64(ny) * (ddpi >> 16) * (sdpi ? sdpi & 0xffff : 1);
+        rx.d = u64(s->tf_YSize) * (ddpi & 0xffff) * (sdpi ? sdpi >> 16 : 1);
     }
     auto *sloc = static_cast<const u32 *>(s->tf_CharLoc);
     auto *sspace = static_cast<const s16 *>(s->tf_CharSpace);
@@ -587,8 +592,9 @@ DFH *scale_font(odf_ctx *c, const TextFont *s, u16 ny, u32 rdpi)
 
     u32 bits = 0;
     for (u32 i = 0; i < nglyph; i++) {
-        u32 w = sloc[i] & 0xffff;
-        if (w) { u32 nw = rx.scale(w); bits += nw ? nw : 1; }
+        u32 w = sloc[i] & 0xffff, j = 0;
+        while (w && j < i && sloc[j] != sloc[i]) j++;
+        if (w && j == i) { u32 nw = rx.scale(w); bits += nw ? nw : 1; }
     }
     if (bits > 0xffff) return nullptr;      /* a glyph's offset is 16 bits */
     u32 modulo = ((bits + 15) >> 4) << 1;
@@ -614,11 +620,13 @@ DFH *scale_font(odf_ctx *c, const TextFont *s, u16 ny, u32 rdpi)
     t->tf_YSize = ny;
     t->tf_Style = u8(s->tf_Style & ~ODF_FSF_TAGGED);
     /* ABI test: the flags a scaled font gets */
-    t->tf_Flags = u8((s->tf_Flags & ~(ODF_FPF_ROMFONT | ODF_FPF_DESIGNED | ODF_FPF_REMOVED)) | ODF_FPF_DISKFONT);
+    t->tf_Flags = u8(s->tf_Flags & ~(ODF_FPF_ROMFONT | ODF_FPF_DESIGNED | ODF_FPF_REMOVED | ODF_FPF_DISKFONT));
     u32 xs = rx.scale(s->tf_XSize);
     t->tf_XSize = u16(xs ? xs : 1);
-    u32 bl = ry.scale(s->tf_Baseline);
-    t->tf_Baseline = u16(bl < ny ? bl : ny - 1u);
+    /* growing, the rows down to it scaled, less one; shrinking, the
+     * baseline itself scaled (ABI test: emerald 8 from 17 is b6) */
+    u32 bl = ny > s->tf_YSize ? ry.scale(s->tf_Baseline + 1u) : ry.scale(s->tf_Baseline) + 1u;
+    t->tf_Baseline = u16(bl ? (bl < ny ? bl : ny) - 1u : 0);
     u32 bs = rx.scale(s->tf_BoldSmear);
     t->tf_BoldSmear = u16(s->tf_BoldSmear && !bs ? 1 : bs);
     t->tf_LoChar = s->tf_LoChar;
@@ -635,10 +643,13 @@ DFH *scale_font(odf_ctx *c, const TextFont *s, u16 ny, u32 rdpi)
 
     auto *loc = reinterpret_cast<u32 *>(m + o_loc);
     t->tf_CharLoc = loc;
+    /* glyphs sharing a source bitmap share the scaled one */
     u32 at = 0;
     for (u32 i = 0; i < nglyph; i++) {
-        u32 w = sloc[i] & 0xffff, nw = 0;
+        u32 w = sloc[i] & 0xffff, nw = 0, j = 0;
         if (w) { nw = rx.scale(w); if (!nw) nw = 1; }
+        while (nw && j < i && sloc[j] != sloc[i]) j++;
+        if (nw && j < i) { loc[i] = loc[j]; continue; }
         loc[i] = (at << 16) | nw;
         at += nw;
     }
@@ -662,16 +673,15 @@ DFH *scale_font(odf_ctx *c, const TextFont *s, u16 ny, u32 rdpi)
         for (u32 i = 0; i < nglyph; i++) {
             u32 soff = sloc[i] >> 16, w = sloc[i] & 0xffff;
             u32 doff = loc[i] >> 16, nw = loc[i] & 0xffff;
-            Ratio gx{w, nw ? nw : 1};
+            /* each pixel the source's, as OS 3.2.3 samples: shrinking, the
+             * one at x * w / w' (rounded down); growing, the one under its
+             * centre at the font's scale, (x + 1/2) / scale */
             for (u32 y = 0; y < ny; y++) {
-                u32 y0 = u32(u64(y) * sy / ny), y1 = u32((u64(y + 1) * sy + ny - 1) / ny);
+                const u32 yy = u32(ny > sy ? u64(2 * y + 1) * sy / (2 * ny) : u64(y) * sy / ny);
                 for (u32 x = 0; x < nw; x++) {
-                    u32 x0 = gx.floor_(x), x1 = u32((u64(x + 1) * w + nw - 1) / nw);
-                    bool on = false;
-                    for (u32 yy = y0; yy < y1 && !on; yy++)
-                        for (u32 xx = x0; xx < x1 && !on; xx++)
-                            on = get_bit(sp, smod, soff + xx, yy);
-                    if (on) set_bit(dp, modulo, doff + x, y);
+                    u32 xx = u32(nw > w ? u64(2 * x + 1) * rx.d / (2 * rx.n) : u64(x) * w / nw);
+                    if (xx >= w) xx = w - 1;
+                    if (get_bit(sp, smod, soff + xx, yy)) set_bit(dp, modulo, doff + x, y);
                 }
             }
         }
@@ -830,23 +840,28 @@ struct Glyph {
     const odf_GlyphMap *gm;        /* NULL: none */
     s32 adv, left;                 /* advance and black box's left, from the origin */
     u32 wid;                       /* black width */
+    bool has;                      /* a map drawn, or a width */
 };
 
 /* An outline font at one size (from #74): the engine draws characters 32
  * to 255 at the request's TA_DeviceDPI, else DFCTRL_XDPI and _YDPI, the
  * point height being the YSize at that vertical DPI (72 points to the
- * inch), times the .otag's OT_YSizeFactor when it has one (pointSize =
- * ysize * high word / low word, as diskfonttag.h gives it, so the font's
- * ascent and descent fit the YSize), the dot size DFCTRL_XDOTP and _YDOTP. Each glyph's black box is
+ * inch), the dot size DFCTRL_XDOTP and _YDOTP. Each glyph's black box is
  * packed in order (its width the box's), tf_CharKern its left from the
- * origin, tf_CharSpace the rest of its advance (at least 0); one without
- * a map is 0 wide and advances 0. The baseline is under the tallest
- * ascent; the descent below it gets what room is left, the ascent the
- * rest when there is none. The last glyph (characters outside 32..255) is
- * a column one pixel wide, the ascent high, advancing half the widest
- * advance. ABI test: all of it, and that the font is plain (tf_Style 0,
- * FSF_TAGGED with the request's DPI), FPF_PROPORTIONAL | FPF_DISKFONT,
- * BoldSmear 1, XSize the widest advance. */
+ * origin, tf_CharSpace the rest of its advance (at least 0). The baseline
+ * is under the tallest ascent, or as far down as the deepest descent
+ * leaves room for. ABI test (OS 3.2.3): the DPI drawn at scaled by the
+ * .otag's OT_YSizeFactor and given as the font's TA_DeviceDPI, the style
+ * plain, FPF_DISKFONT and FPF_PROPORTIONAL unless OT_IsFixed, BoldSmear
+ * 1, XSize the advance of 'n' (else the widest); U+25A1's map packed
+ * first and used for the last glyph and every character with neither a
+ * map nor an OT_WidthList width; one with only a width (the space) that
+ * width, rounded down (a fixed font kerning it out to XSize); nothing
+ * drawn at location 0; a glyph above the ascent moved down to fit; a
+ * pixel kept between glyphs at small sizes, and a fixed font's narrower
+ * glyph moved on to XSize (see the loops). With no
+ * U+25A1 the last glyph is a column one pixel wide, the ascent high,
+ * advancing half the widest advance. */
 DFH *engine_open(odf_ctx *c, void *dir, const char *fontname, const odf_TTextAttr *ta)
 {
     constexpr u32 LO = 32, HI = 255, N = HI - LO + 1;
@@ -860,8 +875,17 @@ DFH *engine_open(odf_ctx *c, void *dir, const char *fontname, const odf_TTextAtt
     Glyph *g = nullptr;
     DFH *d = nullptr;
     const u32 rdpi = (ta->tta_Style & ODF_FSF_TAGGED) ? dpi_of(ta->tta_Tags, true) : 0;
-    const u32 dpi = rdpi ? rdpi : (u32(c->ctrl[0]) << 16) | (u32(c->ctrl[1]) & 0xffff);
-    const u32 ydpi = (dpi & 0xffff) ? (dpi & 0xffff) : 72;
+    const u32 dpi0 = rdpi ? rdpi : (u32(c->ctrl[0]) << 16) | (u32(c->ctrl[1]) & 0xffff);
+    const u32 ydpi = (dpi0 & 0xffff) ? (dpi0 & 0xffff) : 72;
+    /* OT_YSizeFactor (the YSize over the point size, high/low) scales the
+     * DPI the engine draws at: CGTimes' 8782/10034 makes 72 63 */
+    u32 dpi = dpi0, ysf = 0, fixed = 0;
+    if (find_tag(ot, false, ODF_OT_YSizeFactor, &ysf) && (ysf >> 16) && (ysf & 0xffff)) {
+        const u32 hi = ysf >> 16, lo = ysf & 0xffff;
+        const u32 xd = (dpi0 >> 16) * hi / lo, yd = (dpi0 & 0xffff) * hi / lo;   /* rounded down: LetterGothic 57 */
+        dpi = (xd << 16) | (yd & 0xffff);
+    }
+    if (!find_tag(ot, false, ODF_OT_IsFixed, &fixed)) fixed = 0;
     TagItem t[4];
 
     if (!engine_lib(ot, lname, sizeof lname) || !otag_path(ta->tta_Name, path, sizeof path)) goto out;
@@ -872,24 +896,21 @@ DFH *engine_open(odf_ctx *c, void *dir, const char *fontname, const odf_TTextAtt
     t[2] = {ODF_TAG_DONE, 0};
     if (ecall(c, lib, ODF_LVO_SetInfoA, ge, t) != u32(ODF_OTERR_Success)) goto out;
     t[0] = {ODF_OT_DeviceDPI, dpi};
-    {
-        u64 ph = (u64(ysize) * 72 << 16) / ydpi;
-        u32 f = 0;
-        if (find_tag(ot, false, ODF_OT_YSizeFactor, &f) && (f >> 16) && (f & 0xffff))
-            ph = ph * (f >> 16) / (f & 0xffff);
-        t[1] = {ODF_OT_PointHeight, u32(ph)};
-    }
+    t[1] = {ODF_OT_PointHeight, u32((u64(ysize) * 72 << 16) / ydpi)};
     t[2] = {ODF_OT_DotSize, (u32(c->ctrl[2]) << 16) | (u32(c->ctrl[3]) & 0xffff)};
     t[3] = {ODF_TAG_DONE, 0};
     if (ecall(c, lib, ODF_LVO_SetInfoA, ge, t) != u32(ODF_OTERR_Success)) goto out;
-    if (!(g = static_cast<Glyph *>(alloc(c, N * sizeof(Glyph))))) goto out;
+    if (!(g = static_cast<Glyph *>(alloc(c, (N + 1) * sizeof(Glyph))))) goto out;
 
     {
-        s32 top = 0, bottom = 0, maxadv = 0;
-        u32 bits = 1;                                   /* the last glyph's column */
-        for (u32 i = 0; i < N; i++) {
+        s32 top = 0, bottom = 0, maxadv = 0, nadv = -1;
+        u32 bits = 0;
+        const u32 ppem = u32((u64(ysize) << 16) * (dpi >> 16) / ydpi);   /* 16.16, across */
+        /* characters 32 to 255, then (g[N]) U+25A1, the white square the
+         * OS draws for a character with neither a map nor a width */
+        for (u32 i = 0; i <= N; i++) {
             odf_GlyphMap *gm = nullptr;
-            t[0] = {ODF_OT_GlyphCode, LO + i};
+            t[0] = {ODF_OT_GlyphCode, i < N ? LO + i : 0x25A1};
             t[1] = {ODF_TAG_DONE, 0};
             if (ecall(c, lib, ODF_LVO_SetInfoA, ge, t) != u32(ODF_OTERR_Success)) continue;
             t[0] = {ODF_OT_GlyphMap, reinterpret_cast<u32>(&gm)};
@@ -899,27 +920,68 @@ DFH *engine_open(odf_ctx *c, void *dir, const char *fontname, const odf_TTextAtt
             if (u32(gm->glm_BlackLeft) + gm->glm_BlackWidth > u32(gm->glm_BMModulo) * 8 ||
                 u32(gm->glm_BlackTop) + gm->glm_BlackHeight > gm->glm_BMRows)
                 continue;
+            g[i].has = true;
             g[i].adv = s32(gm->glm_X1) - gm->glm_X0;
             g[i].left = s32(gm->glm_BlackLeft) - gm->glm_X0;
             g[i].wid = gm->glm_BlackWidth;
+            /* OS 3.2.3 keeps a pixel between glyphs at small sizes: under 15
+             * pixels to the em one with no room on its right advances one
+             * more, under 22 one with none on its left starts a pixel
+             * further on (CGTimes 5 to 20, CGTriumvirate 15; 30 and up as
+             * the engine gives) */
+            if (!fixed) {
+                const s32 rb = g[i].adv - g[i].left - s32(g[i].wid);
+                if (ppem < (15 << 16)) { if (rb <= 0) g[i].adv++; }
+                else if (ppem < (22 << 16) && g[i].left <= 0) { g[i].left++; g[i].adv++; }
+            }
             s32 up = s32(gm->glm_Y0) - gm->glm_BlackTop;
             s32 down = s32(gm->glm_BlackTop) + gm->glm_BlackHeight - gm->glm_Y0;
             if (up > top) top = up;
             if (down > bottom) bottom = down;
             if (g[i].adv > maxadv) maxadv = g[i].adv;
+            if (LO + i == 'n') nadv = g[i].adv;
             bits += g[i].wid;
         }
-        s32 ascent = top, descent = bottom;
-        if (ascent + descent > s32(ysize)) {
-            descent -= ascent + descent - s32(ysize);
-            if (descent < 0) { ascent += descent; descent = 0; }
+        /* a character with no map but a width (the space, 0xA0) advances
+         * that width at the size, rounded down */
+        {
+            odf_GlyphWidthEntry **wl = nullptr;
+            t[0] = {ODF_OT_GlyphCode, LO};
+            t[1] = {ODF_OT_GlyphCode2, HI};
+            t[2] = {ODF_TAG_DONE, 0};
+            u32 wlist = 0;
+            if (ecall(c, lib, ODF_LVO_SetInfoA, ge, t) == u32(ODF_OTERR_Success)) {
+                t[0] = {ODF_OT_WidthList, reinterpret_cast<u32>(&wlist)};
+                t[1] = {ODF_TAG_DONE, 0};
+                if (ecall(c, lib, ODF_LVO_ObtainInfoA, ge, t) != u32(ODF_OTERR_Success)) wlist = 0;
+            }
+            wl = reinterpret_cast<odf_GlyphWidthEntry **>(wlist);
+            if (wl) {
+                for (const odf_GlyphWidthEntry *w = wl[0]; w && w->gwe_Succ; w = w->gwe_Succ) {
+                    if (w->gwe_Code < LO || w->gwe_Code > HI || w->gwe_Width <= 0) continue;
+                    Glyph &k = g[w->gwe_Code - LO];
+                    if (k.has) continue;
+                    k.has = true;
+                    k.adv = s32((u64(u32(w->gwe_Width)) * ysize * (dpi >> 16)) / (u64(ydpi) << 16));
+                }
+                t[0] = {ODF_OT_WidthList, wlist};
+                t[1] = {ODF_TAG_DONE, 0};
+                ecall(c, lib, ODF_LVO_ReleaseInfoA, ge, t);
+            }
         }
-        if (ascent < 1) ascent = ysize;
+        const bool box = g[N].has && g[N].wid;
+        if (!box) bits += 1;                      /* the last glyph's column */
+        /* the descent is kept whole and the ascent gets the room left; a
+         * glyph taller than the ascent moves down to fit, as OS 3.2.3's
+         * accented capitals do */
+        s32 ascent = top;
+        if (ascent + bottom > s32(ysize)) ascent = s32(ysize) - bottom;
+        if (ascent < 1) ascent = top ? 1 : ysize;
         if (bits > 0xffff) goto out;              /* a glyph's offset is 16 bits */
 
         const u32 nglyph = N + 1, modulo = ((bits + 15) >> 4) << 1;
         u32 o = sizeof(DFH);
-        const u32 o_tags = o;   if (rdpi) o += 2 * sizeof(TagItem);
+        const u32 o_tags = o;   o += 2 * sizeof(TagItem);
         const u32 o_loc = o;    o += nglyph * 4;
         const u32 o_space = o;  o += nglyph * 2;
         const u32 o_kern = o;   o += nglyph * 2;
@@ -932,33 +994,52 @@ DFH *engine_open(odf_ctx *c, void *dir, const char *fontname, const odf_TTextAtt
         auto *sp = reinterpret_cast<s16 *>(m + o_space);
         auto *kn = reinterpret_cast<s16 *>(m + o_kern);
         u8 *data = m + o_data;
+        const s32 xsize = nadv > 0 ? nadv : maxadv > 0 ? maxadv : 1;
+        /* the square first, at 0; each glyph after it, one with nothing to
+         * draw at 0; a character with neither map nor width is the square */
         u32 x = 0;
-        for (u32 i = 0; i < N; i++) {
+        for (u32 n = 0; n <= N; n++) {
+            const u32 i = n ? n - 1 : N;
             const Glyph &k = g[i];
-            loc[i] = (x << 16) | k.wid;
-            sp[i] = s16(k.adv - k.left > 0 ? k.adv - k.left : 0);
-            kn[i] = s16(k.left);
+            if (i == N && !box) continue;
+            if (i < N && !k.has && box) {
+                loc[i] = loc[N]; sp[i] = sp[N]; kn[i] = kn[N];
+                continue;
+            }
+            loc[i] = k.wid ? (x << 16) | k.wid : 0;
+            /* a fixed font's narrower glyph starts further on, to XSize */
+            const s32 left = fixed && k.gm && k.wid && k.adv < xsize ? k.left + xsize - k.adv : k.left;
+            const s32 adv = fixed && k.gm && k.wid && k.adv < xsize ? xsize : k.adv;
+            sp[i] = s16(adv - left > 0 ? adv - left : 0);
+            kn[i] = s16(left);
+            if (!k.gm && fixed && xsize > sp[i]) kn[i] = s16(xsize - sp[i]);   /* LetterGothic's space */
             const odf_GlyphMap *gm = k.gm;
-            for (u32 y = 0; gm && k.wid && y < gm->glm_BlackHeight; y++) {
-                s32 dy = ascent - (s32(gm->glm_Y0) - gm->glm_BlackTop) + s32(y);
-                if (dy < 0 || dy >= s32(ysize)) continue;
+            if (!gm || !k.wid) continue;
+            s32 y0 = ascent - (s32(gm->glm_Y0) - gm->glm_BlackTop);
+            if (y0 < 0) y0 = 0;
+            for (u32 y = 0; y < gm->glm_BlackHeight; y++) {
+                s32 dy = y0 + s32(y);
+                if (dy >= s32(ysize)) break;
                 for (u32 sx = 0; sx < k.wid; sx++)
                     if (get_bit(gm->glm_BitMap, gm->glm_BMModulo, gm->glm_BlackLeft + sx, gm->glm_BlackTop + y))
                         set_bit(data, modulo, x + sx, u32(dy));
             }
             x += k.wid;
         }
-        loc[N] = (x << 16) | 1;
-        sp[N] = s16(maxadv > 1 ? maxadv >> 1 : 1);
-        for (u32 y = 0; y < u32(ascent) && y < ysize; y++) set_bit(data, modulo, x, y);
+        if (!box) {
+            loc[N] = (x << 16) | 1;
+            sp[N] = s16(maxadv > 1 ? maxadv >> 1 : 1);
+            kn[N] = 0;
+            for (u32 y = 0; y < u32(ascent) && y < ysize; y++) set_bit(data, modulo, x, y);
+        }
 
         d->dfh_FileID = ODF_DFH_ID;
         set_name(d, ta->tta_Name);
         tf->tf_Message.mn_Length = sizeof(TextFont);
         tf->tf_YSize = ysize;
         tf->tf_Style = 0;
-        tf->tf_Flags = ODF_FPF_PROPORTIONAL | ODF_FPF_DISKFONT;
-        tf->tf_XSize = u16(maxadv > 0 ? maxadv : 1);
+        tf->tf_Flags = u8(ODF_FPF_DISKFONT | (fixed ? 0 : ODF_FPF_PROPORTIONAL));
+        tf->tf_XSize = u16(xsize);
         tf->tf_Baseline = u16(ascent > 0 ? ascent - 1 : 0);
         tf->tf_BoldSmear = 1;
         tf->tf_LoChar = u8(LO);
@@ -968,9 +1049,11 @@ DFH *engine_open(odf_ctx *c, void *dir, const char *fontname, const odf_TTextAtt
         tf->tf_CharLoc = loc;
         tf->tf_CharSpace = sp;
         tf->tf_CharKern = kn;
-        if (rdpi) {
+        {
+            /* the DPI it was drawn at, as the font's tag; install() takes
+             * it into the extension, and the style is left plain */
             auto *tg = reinterpret_cast<TagItem *>(m + o_tags);
-            tg[0] = {ODF_TA_DeviceDPI, rdpi};
+            tg[0] = {ODF_TA_DeviceDPI, dpi};
             tg[1] = {ODF_TAG_DONE, 0};
             tf->tf_Style |= ODF_FSF_TAGGED;
             d->dfh_Segment = s32(reinterpret_cast<u32>(tg));     /* dfh_TagList */
@@ -979,7 +1062,7 @@ DFH *engine_open(odf_ctx *c, void *dir, const char *fontname, const odf_TTextAtt
 
 out:
     if (g) {
-        for (u32 i = 0; i < N; i++)
+        for (u32 i = 0; i <= N; i++)
             if (g[i].gm) {
                 t[0] = {ODF_OT_GlyphMap, reinterpret_cast<u32>(g[i].gm)};
                 t[1] = {ODF_TAG_DONE, 0};
@@ -1005,6 +1088,15 @@ struct Cand {
 
 /* The candidate the rules prefer for scaling from (or, unscaled, when no
  * size matches), or -1. ABI test: the order of preference. */
+/* With FPF_DESIGNED a font in memory scaled from a bitmap (none of
+ * FPF_DESIGNED, _ROMFONT, _DISKFONT) is no answer. ABI test: topaz 12
+ * gives the 11; CGTimes 51 the 50 drawn before. */
+bool scaled_out(const Request &r, const Cand &k)
+{
+    return (r.f & ODF_FPF_DESIGNED) && k.mem &&
+           !(k.flags & (ODF_FPF_DESIGNED | ODF_FPF_ROMFONT | ODF_FPF_DISKFONT));
+}
+
 int pick_near(odf_ctx *c, const Vec<Cand> &cs, const Request &r, bool sources_only)
 {
     int best = -1;
@@ -1012,11 +1104,18 @@ int pick_near(odf_ctx *c, const Vec<Cand> &cs, const Request &r, bool sources_on
     for (u32 i = 0; i < cs.size(); i++) {
         const Cand &k = cs[i];
         if (sources_only && k.mem && !(k.flags & (ODF_FPF_DESIGNED | ODF_FPF_ROMFONT))) continue;
-        if (!k.ysize) continue;
+        if (scaled_out(r, k) || !k.ysize) continue;
         u32 w = weigh_env(c, r, r.y, k.style, k.flags, k.dpi);
-        u32 dist = k.ysize > r.y ? k.ysize - r.y : r.y - k.ysize;
+        /* ABI test: OS 3.2.3 scales from half or twice the size first (topaz
+         * 16 from 8), then grows the largest smaller one (garnet 14 from 9,
+         * not 16), then shrinks the smallest larger one */
+        u32 dist;
+        if (!sources_only) dist = k.ysize > r.y ? k.ysize - r.y : r.y - k.ysize;
+        else if (u32(k.ysize) * 2 == r.y || u32(r.y) * 2 == k.ysize) dist = 0;
+        else if (k.ysize < r.y) dist = 1 + (r.y - k.ysize);
+        else dist = 0x10000 + (k.ysize - r.y);
         bool better = best < 0 || w > bw || (w == bw && dist < bd) ||
-                      (w == bw && dist == bd && k.ysize > cs[u32(best)].ysize);
+                      (w == bw && dist == bd && !sources_only && k.ysize > cs[u32(best)].ysize);
         if (better) { best = int(i); bw = w; bd = dist; }
     }
     return best;
@@ -1127,6 +1226,7 @@ TextFont *odf_OpenDiskFont(odf_ctx *c, const odf_TextAttr *ta)
     int best = -1;
     u32 bw = 0;
     for (u32 i = 0; i < cs.size(); i++) {
+        if (scaled_out(r, cs[i])) continue;
         u32 w = weigh_env(c, r, cs[i].ysize, cs[i].style, cs[i].flags, cs[i].dpi);
         if (w > bw) { bw = w; best = int(i); }
     }
@@ -1142,6 +1242,7 @@ TextFont *odf_OpenDiskFont(odf_ctx *c, const odf_TextAttr *ta)
             if (DFH *d = c->outline->outline_open(c, ff.dir(), base, &tta)) {
                 set_name(d, ta->ta_Name);
                 install(c, d, 0);
+                d->dfh_TF.tf_Style &= u8(~ODF_FSF_TAGGED);      /* ABI test: OS 3.2.3 gives s00 */
                 return c->env->open_font(c, &d->dfh_TF);
             }
         }
@@ -1152,6 +1253,7 @@ TextFont *odf_OpenDiskFont(odf_ctx *c, const odf_TextAttr *ta)
                 c->env->close_font(c, s);
                 if (d) {
                     install(c, d, 0);
+                    d->dfh_TF.tf_Style &= u8(~ODF_FSF_TAGGED);      /* ABI test: s00, the DPI in its tags */
                     return c->env->open_font(c, &d->dfh_TF);
                 }
             }
@@ -1248,14 +1350,21 @@ struct Avail {
             Entry e;
             if (ff.cont.entry(i, e)) add(type, e.ysize, e.style, e.flags, n, e.tags, false, e.ntags);
         }
-        /* an outline font scales to any size: with AFF_SCALED, an entry for
-         * each size its .otag's OT_AvailSizes names (from #74; ABI test) */
-        if (outline && (flags & ODF_AFF_SCALED)) {
+        /* an outline font: an entry for each size its .otag's OT_AvailSizes
+         * names, AFF_SCALED or not, FPF_PROPORTIONAL unless OT_IsFixed; with
+         * AFF_TYPE, first a YSize 0 entry typed AFF_SCALED | AFF_OTAG for its
+         * other sizes (ABI test: OS 3.2.3's AvailFonts) */
+        if (outline) {
             if (TagItem *ot = otag_in(c, dir, name)) {
+                u32 fixed = 0;
+                if (!find_tag(ot, false, ODF_OT_IsFixed, &fixed)) fixed = 0;
+                const u8 f = u8(ODF_FPF_DISKFONT | (fixed ? 0 : ODF_FPF_PROPORTIONAL));
+                if (flags & ODF_AFF_TYPE)
+                    add(u16(type | ODF_AFF_SCALED), 0, 0, f, n, nullptr, false, 0);
                 const u16 *sz = nullptr;
                 u32 k = otag_sizes(ot, &sz);
                 for (u32 i = 0; i < k; i++)
-                    add(u16(type | ODF_AFF_SCALED), sz[i], 0, ODF_FPF_DISKFONT, n, nullptr, false, 0);
+                    add(type, sz[i], 0, f, n, nullptr, false, 0);
                 release(c, ot);
             }
         }
@@ -1276,9 +1385,12 @@ int rec_cmp(const Avail &a, const Rec &x, const Rec &y)
 }  // namespace
 
 /* The buffer: the AvailFontsHeader, the entries, (with AFF_TAGGED) the
- * tags, then the names. An entry whose name is the same as the entry's
- * before it shares that string. Too small: nothing is written and the
- * answer is the number of bytes more that are needed. ABI test: both. */
+ * tags, and the names at the buffer's end, the first entry's highest. An
+ * entry whose name is the same as the entry's before it shares that
+ * string. The size asked for leaves room for a name per entry; a buffer
+ * the shared names fit is enough. Too small: nothing is written and the
+ * answer is the number of bytes more that are asked for. ABI test: OS
+ * 3.2.3's AvailFonts, needs and name offsets. */
 s32 odf_AvailFonts(odf_ctx *c, void *buf, s32 bytes, u32 flags)
 {
     Avail a(c, flags);
@@ -1336,23 +1448,25 @@ s32 odf_AvailFonts(odf_ctx *c, void *buf, s32 bytes, u32 flags)
     const u32 o_tags = need;
     if (tagged)
         for (u32 i = 0; i < n; i++) need += a.recs[i].ntags * sizeof(TagItem);
-    const u32 o_names = need;
-    for (u32 i = 0; i < n; i++)
-        if (!i || !seq(&a.names[a.recs[i].name], &a.names[a.recs[i - 1].name]))
-            need += slen(&a.names[a.recs[i].name]) + 1;
-    if (bytes < 0 || u32(bytes) < need) return s32(need - (bytes > 0 ? u32(bytes) : 0));
+    u32 fits = need;
+    for (u32 i = 0; i < n; i++) {
+        const u32 l = slen(&a.names[a.recs[i].name]) + 1;
+        need += l;
+        if (!i || !seq(&a.names[a.recs[i].name], &a.names[a.recs[i - 1].name])) fits += l;
+    }
+    if (bytes < 0 || u32(bytes) < fits) return s32(need - (bytes > 0 ? u32(bytes) : 0));
 
     u8 *b = static_cast<u8 *>(buf);
     reinterpret_cast<odf_AvailFontsHeader *>(b)->afh_NumEntries = u16(n);
-    u32 ot = o_tags, on = o_names, last = 0;
+    u32 ot = o_tags, on = u32(bytes), last = 0;
     for (u32 i = 0; i < n; i++) {
         const Rec &r = a.recs[i];
         const char *nm = &a.names[r.name];
         if (!i || !seq(nm, &a.names[a.recs[i - 1].name])) {
             u32 l = slen(nm) + 1;
+            on -= l;
             copy(b + on, nm, l);
             last = on;
-            on += l;
         }
         odf_TTextAttr *at;
         if (tagged) {
@@ -1461,7 +1575,21 @@ odf_FontContentsHeader *odf_NewFontContents(odf_ctx *c, void *fontsLock, const c
     drawer[dl] = 0;
     Dir d(c);
     d.set(c->env->dir_lock(c, fontsLock, drawer));
-    if (!d.get()) return nullptr;
+    if (!d.get()) {
+        /* an outline font with no drawer: its contents, no entries (ABI
+         * test: OS 3.2.3 gives CGTimes.font 0f03 n0) */
+        u32 fl = 0;
+        void *fm = c->env->file_load(c, fontsLock, fontName, &fl);
+        Contents k;
+        const bool outline = fm && k.parse(fm, fl) && k.id == ODF_OFCH_ID;
+        release(c, fm);
+        if (!outline) return nullptr;
+        auto *h = static_cast<odf_FontContentsHeader *>(alloc(c, 4));
+        if (!h) return nullptr;
+        h->fch_FileID = ODF_OFCH_ID;
+        h->fch_NumEntries = 0;
+        return h;
+    }
     Scan s(c);
     s.dir = d.get();
     s.drawer = drawer;

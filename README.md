@@ -372,6 +372,16 @@ ascent and descent together are taller than its em (DejaVu's are 1.164 em)
 fits the YSize instead of losing its descenders. An `.otag` without the tag
 is drawn as before.
 
+Since 1.8 the outline-font core is amicradle-guest's again (main 99d4a2b5;
+`library/textfont/README.md`), so an outline font through the system's
+bullet.library is laid out as OS 3.2.3's diskfont.library does it: a
+character with a width but no picture (the space, U+00A0) takes its
+`OT_WidthList` width instead of none, a character with neither gets
+U+25A1, `OT_YSizeFactor` scales the DPI the engine draws at (CGTimes'
+8782/10034 makes 72 63) instead of the point height, `OT_IsFixed` fonts
+keep their glyphs to XSize, and a pixel is kept between glyphs at small
+sizes. 1.7's CGTriumvirate and CGTimes came out with no space between words.
+
 Revision 3 (1.3) adds what a layout engine such as WebCore asks:
 `OF_ShapeA` (UTF-16, script, language, direction, features over ranges),
 `OF_GetFaceMetrics`, `OF_GlyphOutline`, `OF_GlyphExtents`,
