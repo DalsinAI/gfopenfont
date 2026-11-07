@@ -13,7 +13,10 @@
  * such as OS 3.2's CGTriumvirate.font (an Intellifont .type): with the
  * system's bullet.library in LIBS: it must come back at 83 and then at 72
  * pixels exactly, as diskfont.library's OpenDiskFont gives it (1.5 gave the
- * nearest size already in memory, or none). No bullet.library: not run.
+ * nearest size already in memory, or none), and (1.8) its space must have a
+ * width and a sentence measure what OS 3.2's diskfont.library makes of it,
+ * when that can be had (the OS's copy expunged first). No bullet.library:
+ * not run.
  * OUTLINE is an outline .font in FONTS: whose .otag names a TrueType or
  * OpenType file (OT_Spec1), for OF_OpenTextFont at a size it has no bitmap
  * for; without it only bitmap fonts are opened (topaz.font).
@@ -38,6 +41,8 @@
 #include <proto/exec.h>
 #include <proto/dos.h>
 #include <proto/graphics.h>
+#include <proto/diskfont.h>
+#include <graphics/gfxbase.h>
 #include <graphics/text.h>
 #include <libraries/gfopenfont.h>
 #include <proto/gfopenfont.h>
@@ -57,6 +62,7 @@
 
 struct Library *OpenFontBase;
 struct GfxBase *GfxBase;
+struct Library *DiskfontBase;
 static int fails;
 
 static void check(int ok, const char *what)
@@ -99,6 +105,52 @@ static void plain_task(void)
     if (f)
         OF_CloseFace(f);
     Signal(parent, SIGBREAKF_CTRL_F);
+}
+
+/* 1.8: what a text in tf measures, and the space's advance (kern + space) */
+static const char sample[] = "The quick brown fox jumps over the lazy dog";
+
+static LONG measure(struct TextFont *tf, LONG *space)
+{
+    struct RastPort rp;
+    UWORD i = ' ' - tf->tf_LoChar;
+    InitRastPort(&rp);
+    SetFont(&rp, tf);
+    *space = tf->tf_CharSpace ? ((WORD *)tf->tf_CharSpace)[i] : tf->tf_XSize;
+    if (tf->tf_CharKern) *space += ((WORD *)tf->tf_CharKern)[i];
+    return TextLength(&rp, (STRPTR)sample, sizeof sample - 1);
+}
+
+/* 1 when a font of this name and size is in the system's list (graphics' TextFonts) */
+static int in_memory(const char *name, UWORD ysize)
+{
+    struct Node *n;
+    int found = 0;
+    Forbid();
+    for (n = GfxBase->TextFonts.lh_Head; n->ln_Succ; n = n->ln_Succ)
+        if (n->ln_Name && !strcmp(n->ln_Name, name) && ((struct TextFont *)n)->tf_YSize == ysize) found = 1;
+    Permit();
+    return found;
+}
+
+/* OS 3.2's diskfont.library at this size: the text's width and the space's, or -1 when it can't
+ * be had cleanly (no diskfont.library, or the font stays in memory after it is closed, so
+ * gfopenfont.library would be given diskfont's own copy back) */
+static LONG os_measure(const char *name, UWORD ysize, LONG *space)
+{
+    struct TextAttr ta = { (STRPTR)name, ysize, 0, 0 };
+    struct TextFont *tf;
+    LONG w = -1;
+    APTR big;
+    if (!(DiskfontBase = OpenLibrary((CONST_STRPTR)"diskfont.library", 40))) return -1;
+    if ((tf = OpenDiskFont(&ta))) {
+        if (tf->tf_YSize == ysize) w = measure(tf, space);
+        CloseFont(tf);
+    }
+    CloseLibrary(DiskfontBase);
+    DiskfontBase = NULL;
+    if ((big = AllocMem(0x7FFFFFF0, MEMF_PUBLIC))) FreeMem(big, 0x7FFFFFF0);  /* fails: unused fonts expunged */
+    return in_memory(name, ysize) ? -1 : w;
 }
 
 int main(void)
@@ -497,12 +549,26 @@ int main(void)
                 CloseLibrary(bl);
                 for (i = 0; i < 2; i++) {
                     char what[80];
+                    snprintf(what, sizeof what, "OF_OpenTextFont: an Intellifont outline at %u", sizes[i]);
+                    LONG os_space = 0, os_w = os_measure((char *)args[5], sizes[i], &os_space);
                     ta.ta_Name = (STRPTR)args[5];
                     ta.ta_YSize = sizes[i];
                     tf = OF_OpenTextFont(&ta);
-                    snprintf(what, sizeof what, "OF_OpenTextFont: an Intellifont outline at %u", sizes[i]);
                     check(tf != NULL && tf->tf_YSize == sizes[i], what);
-                    if (tf) { printf("     %s %u: got %u\n", (char *)args[5], sizes[i], tf->tf_YSize); CloseFont(tf); }
+                    if (tf) {
+                        LONG space = 0, w = measure(tf, &space);
+                        printf("     %s %u: got %u, space %ld, text %ld\n", (char *)args[5], sizes[i], tf->tf_YSize, (long)space, (long)w);
+                        /* 1.8: the space has its width (1.7 gave it none), as diskfont.library's */
+                        snprintf(what, sizeof what, "OF_OpenTextFont: the Intellifont space at %u has a width", sizes[i]);
+                        check(space > 0, what);
+                        if (os_w < 0) printf("     diskfont.library's %u: not compared\n", sizes[i]);
+                        else {
+                            printf("     diskfont.library's %u: space %ld, text %ld\n", sizes[i], (long)os_space, (long)os_w);
+                            snprintf(what, sizeof what, "OF_OpenTextFont: Intellifont at %u measures as diskfont.library's", sizes[i]);
+                            check(space == os_space && w == os_w, what);
+                        }
+                        CloseFont(tf);
+                    }
                 }
             }
         }
