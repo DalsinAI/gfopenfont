@@ -9,7 +9,7 @@
  *
  * OS 3.2's bullet.library draws Agfa Intellifont outlines, whose file
  * format has no public specification. This engine is bullet.library's API
- * over GFOpenFont (gfopenfont.library): GFOpenFont reads the outline file
+ * over OpenFont (gfopenfont.library): GFOpenFont reads the outline file
  * (TrueType and OpenType, CFF too) and draws each glyph's coverage through
  * the matrix the tags make; the core keeps the tags, the errors, the
  * emboldening and the GlyphMap. An outline file GFOpenFont can't read, or no

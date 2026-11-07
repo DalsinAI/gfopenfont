@@ -153,7 +153,7 @@ struct obl_env {
     /* exec: cleared memory (AllocVec MEMF_CLEAR on the Amiga); NULL when out */
     void *(*alloc)(void *user, obl_u32 size);
     void (*free)(void *user, void *mem);          /* NULL is allowed */
-    /* The font, through GFOpenFont (gfopenfont.library on the Amiga). The core
+    /* The font, through OpenFont (gfopenfont.library on the Amiga). The core
      * reads no font file and draws no outline itself.
      * face_open: the first face of the outline file at path, or NULL when
      * there is none GFOpenFont reads (or no GFOpenFont); *upm its units per em. */

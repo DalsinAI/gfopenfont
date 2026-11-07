@@ -5,8 +5,8 @@ them here again:
 
 | File | From |
 | --- | --- |
-| `diskfont_core.cpp`, `.h` | `libraries/opendiskfont` (main d2e10cce) |
-| `bullet_core.cpp`, `.h` | `libraries/openbullet` (PR #450, 8a38ee38) |
+| `diskfont_core.cpp`, `.h` | `libraries/opendiskfont` (main 99d4a2b5) |
+| `bullet_core.cpp`, `.h` | `libraries/openbullet` (main 99d4a2b5) |
 
 Their tests are there (`tests/m68k/test_opendiskfont.sh`,
 `tests/m68k/test_openbullet.sh`, the latter on GFOpenFont's own reader and
