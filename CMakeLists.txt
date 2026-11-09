@@ -97,6 +97,9 @@ find_package(Python3 COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)
     add_test(NAME amigafont_check COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/amigafont.py
              check ${CMAKE_CURRENT_SOURCE_DIR}/fonts/amiga/DejaVuSansMono.font)
+    # AmiSans's proportional bitmap sizes beside its outline (tools/amigapropfont.py)
+    add_test(NAME amigapropfont_check COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/amigapropfont.py
+             check ${CMAKE_CURRENT_SOURCE_DIR}/fonts/outline/AmiSans.font)
 endif()
 
 # The reference gate: GFOpenFont's reader and rasteriser against FreeType

@@ -516,7 +516,13 @@ library is copied. FreeType and HarfBuzz are no longer in GFOpenFont; the
 reference tests build against separate trees of theirs. The fonts in
 `fonts/amiga` are DejaVu Sans Mono's, under the Bitstream Vera licence with
 DejaVu's changes in the public domain
-([fonts/amiga/LICENSE-DejaVu.txt](fonts/amiga/LICENSE-DejaVu.txt)). The CJK
+([fonts/amiga/LICENSE-DejaVu.txt](fonts/amiga/LICENSE-DejaVu.txt)).
+[fonts/outline/TeXGyreHeros](fonts/outline/TeXGyreHeros/README.md) is TeX
+Gyre Heros 2.004, unmodified, under the GUST Font License, and
+`fonts/outline/AmiSans.font` its Amiga font with hinted bitmap sizes 12 and 13
+(tools/amigapropfont.py), under the same licence: the open stand-in for OS
+3.2.3's CGTriumvirate that GFOpenUp installs and the open ROM's tall Workbench
+falls back to. The CJK
 faces are not in this repository: Droid Sans Fallback Full (the Android Open
 Source Project's, Apache License 2.0) and NanumGothic (NHN Corporation's, SIL
 Open Font License 1.1); `fonts/cjk/fetch-cjk-font.sh` fetches them at build
