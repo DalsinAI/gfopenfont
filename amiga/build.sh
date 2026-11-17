@@ -5,8 +5,9 @@
 #
 #   amiga/build.sh [OUT_DIR]
 #
-# CC overrides the compiler. Otherwise the script looks for the stove, then
-# the unpacked release under /opt.
+# CC overrides the compiler. Otherwise the script looks for the stove
+# OS32_GCC16 names, else the os32-gcc16 stove, then the unpacked release
+# under /opt (amiga/find-cc.sh).
 set -eu
 HERE=$(cd "$(dirname "$0")" && pwd)
 ROOT=$(cd "$HERE/.." && pwd)
@@ -14,16 +15,12 @@ ROOT=$(cd "$HERE/.." && pwd)
 # mathieee libraries), not libm881, so one build runs on every 68040.
 SPECS="-specs=$ROOT/toolchain/m68k-soft-m68040.specs"
 if [ -z "${CC:-}" ]; then
-    if [ -x "$HOME/AmiCradle/stoves/os32-gcc16/bin/m68k-amigaos-gcc" ]; then
-        CC=$HOME/AmiCradle/stoves/os32-gcc16/bin/m68k-amigaos-gcc
-    elif [ -x "$HOME/AmiCradle/stoves/os32-gcc16/prefix/bin/m68k-amigaos-gcc" ]; then
-        CC=$HOME/AmiCradle/stoves/os32-gcc16/prefix/bin/m68k-amigaos-gcc
-    elif [ -x /opt/openamigagcc-16.2.0-open2-x86_64-linux/bin/m68k-amigaos-gcc ]; then
-        CC=/opt/openamigagcc-16.2.0-open2-x86_64-linux/bin/m68k-amigaos-gcc
-    else
-        echo "m68k-amigaos-gcc not found. Set CC, or install the os32-gcc16 stove." >&2
+    BIN=$(sh "$HERE/find-cc.sh" /opt/openamigagcc-16.2.0-open2-x86_64-linux/bin)
+    if [ -z "$BIN" ]; then
+        echo "m68k-amigaos-gcc not found. Set CC or OS32_GCC16, or install the os32-gcc16 stove." >&2
         exit 1
     fi
+    CC=$BIN/m68k-amigaos-gcc
 fi
 OUT=${1:-$ROOT/build}
 mkdir -p "$OUT"

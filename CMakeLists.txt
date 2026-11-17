@@ -93,6 +93,8 @@ endif()
 
 # The Amiga bitmap fonts in fonts/amiga, read back: every field tools/amigafont.py
 # writes, checked (Python 3 alone; making them needs Pillow, checking doesn't).
+# the Amiga build scripts find the compiler OS32_GCC16 names (amiga/find-cc.sh)
+add_test(NAME amiga_find_cc COMMAND sh ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_find_cc.sh)
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)
     add_test(NAME amigafont_check COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/amigafont.py
