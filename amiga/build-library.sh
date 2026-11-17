@@ -6,8 +6,9 @@
 #
 #   amiga/build-library.sh [OUT_DIR]          (default build/amiga)
 #
-#   CC, CXX    the compilers (default: the os32-gcc16 stove, then the
-#              release unpacked under /opt)
+#   CC, CXX    the compilers (default: the stove OS32_GCC16 names, else the
+#              os32-gcc16 stove, then the release unpacked under /opt:
+#              amiga/find-cc.sh)
 #   NDK        a folder of AmigaOS headers, when the compiler has none of
 #              its own: GFOpenNDK's Include_H (gfopensdk/OpenNDK/Include_H)
 #   OPENGPU_INCLUDE  gfopengpu.library's headers (gfopengpu/stream.h,
@@ -25,15 +26,9 @@ OUT=${1:-$ROOT/build/amiga}
 WORK=$OUT/work
 mkdir -p "$OUT" "$WORK"
 
-find_cc() {
-    for d in "$HOME/AmiCradle/stoves/os32-gcc16/bin" "$HOME/AmiCradle/stoves/os32-gcc16/prefix/bin" \
-             /opt/gfopenamigagcc-16.2.0-open6-x86_64-linux/bin /opt/openamigagcc-16.2.0-open4-x86_64-linux/bin; do
-        if [ -x "$d/m68k-amigaos-gcc" ]; then echo "$d"; return; fi
-    done
-}
 if [ -z "${CC:-}" ]; then
-    BIN=$(find_cc)
-    [ -n "$BIN" ] || { echo "m68k-amigaos-gcc not found: set CC and CXX, or install the os32-gcc16 stove" >&2; exit 1; }
+    BIN=$(sh "$HERE/find-cc.sh" /opt/gfopenamigagcc-16.2.0-open6-x86_64-linux/bin /opt/openamigagcc-16.2.0-open4-x86_64-linux/bin)
+    [ -n "$BIN" ] || { echo "m68k-amigaos-gcc not found: set CC and CXX or OS32_GCC16, or install the os32-gcc16 stove" >&2; exit 1; }
     CC=$BIN/m68k-amigaos-gcc
     CXX=$BIN/m68k-amigaos-g++
 fi

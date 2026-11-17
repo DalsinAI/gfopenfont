@@ -6,7 +6,12 @@
 # (amiga/build-library.sh).
 set -eu
 HERE=$(cd "$(dirname "$0")" && pwd)
-STOVE=${STOVE:-$HOME/AmiCradle/stoves/os32-gcc16}
+# the stove: STOVE, else the one OS32_GCC16 names, else Cradle's (in
+# ~/AmiCradle/kitchen/stoves since 16 November 2026, ~/AmiCradle/stoves before)
+if [ -z "${STOVE:-}" ]; then
+    STOVE=${OS32_GCC16:-$HOME/AmiCradle/kitchen/stoves/os32-gcc16}
+    [ -d "$STOVE" ] || [ -n "${OS32_GCC16:-}" ] || STOVE=$HOME/AmiCradle/stoves/os32-gcc16
+fi
 OUT=${OUT:-$HERE/build/amiga}
 BIN=
 for d in "$STOVE/bin" "$STOVE/prefix/bin"; do
